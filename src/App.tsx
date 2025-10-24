@@ -19,7 +19,7 @@ export default function App() {
             <Typography>Personal Training</Typography>
           </Toolbar>
         </AppBar>
-        {/* <Carlist /> */}
+        <Customerlist />
         <CssBaseline />
       </Container>
     </>
