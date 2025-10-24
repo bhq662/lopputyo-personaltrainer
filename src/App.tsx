@@ -8,6 +8,7 @@ import Container from "@mui/material/Container";
 import AppBar from "@mui/material/AppBar";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
+import Traininglist from "./components/Traininglist";
 
 export default function App() {
 
@@ -19,7 +20,10 @@ export default function App() {
             <Typography>Personal Training</Typography>
           </Toolbar>
         </AppBar>
+        <h3>Customers</h3>
         <Customerlist />
+        <h3>Trainings</h3>
+        <Traininglist />
         <CssBaseline />
       </Container>
     </>
