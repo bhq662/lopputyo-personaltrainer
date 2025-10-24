@@ -21,3 +21,24 @@ export type Customer = {
         }
     }
 }
+
+export type Training = {
+    date: Date;
+    duration: number;
+    activity: string;
+    _links: {
+        self: {
+            // A link to the training session itself
+            href: string;
+        }
+        training: {
+            // Another link to the training session itself
+            href: string;
+        }
+        customer: {
+            // A link to the customer associated with the training session.
+            href: string;
+        }
+    }
+
+}
