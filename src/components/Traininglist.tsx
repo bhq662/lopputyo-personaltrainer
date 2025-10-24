@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import type { Training } from "../types";
+import { deleteTraining, getTrainings } from "../trainingAPI";
 // import type { Customer } from "../types";
 
 // style imports
 import { DataGrid } from "@mui/x-data-grid";
 import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
 import Button from "@mui/material/Button";
-import { deleteTraining, getTrainings } from "../trainingAPI";
 
 export default function Traininglist() {
     // initial state
@@ -18,18 +18,12 @@ export default function Traininglist() {
     }, []);
 
     // fetch trainings from API
+    // TO DO: attach customer names
     const fetchTrainings = () => {
         getTrainings()
             .then(data => setTrainings(data._embedded.trainings))
             .catch(err => console.error(err))
     }
-
-    // fetch customers from API to display first names
-    // const fetchCustomers = () => {
-    //     getCustomers()
-    //         .then(data => setCustomers(data._embedded.customers))
-    //         .catch(err => console.error(err))
-    // }
 
     //fetch delete-function from trainingAPI
     const handleDelete = (url: string) => {
