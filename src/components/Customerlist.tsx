@@ -23,7 +23,7 @@ export default function Customerlist() {
             .catch(err => console.error(err))
     }
 
-    //fetch delete-function from customerAPI
+    //fetch delete-function from API
     const handleDelete = (url: string) => {
         if (window.confirm("Are you sure?")) {
             deleteCustomer(url)
@@ -37,9 +37,9 @@ export default function Customerlist() {
         { field: 'firstname', width: 100, headerName: 'First name' },
         { field: 'lastname', width: 100, headerName: 'Last name' },
         { field: 'streetaddress', width: 150, headerName: 'Street address' },
-        { field: 'postcode', width: 100, headerName: 'Postal code' },
+        { field: 'postcode', width: 80, headerName: 'ZIP' },
         { field: 'city', width: 100, headerName: 'City' },
-        { field: 'email', width: 200, headerName: 'Email' },
+        { field: 'email', width: 180, headerName: 'Email' },
         { field: 'phone', width: 150, headerName: 'Phone number' },
 
         // DELETE -functionality
@@ -65,7 +65,7 @@ export default function Customerlist() {
     return (
         <>
             {/* display table */}
-            <div style={{ width: '100%', height: 500, margin: 'auto' }}>
+            <div style={{ width: '90%', height: 500, margin: 'auto' }}>
                 <DataGrid
                     rows={customers}
                     columns={columns}

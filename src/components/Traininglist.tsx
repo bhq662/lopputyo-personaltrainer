@@ -25,7 +25,7 @@ export default function Traininglist() {
             .catch(err => console.error(err))
     }
 
-    //fetch delete-function from trainingAPI
+    //fetch delete-function from API
     const handleDelete = (url: string) => {
         if (window.confirm("Are you sure?")) {
             deleteTraining(url)
@@ -38,8 +38,8 @@ export default function Traininglist() {
     const columns: GridColDef[] = [
         { field: 'date', width: 250, headerName: 'Date' },
         { field: 'duration', width: 125, headerName: 'Duration (min)' },
-        { field: 'activity', width: 100, headerName: 'Activity' },
-        { field: 'customer', width: 150, headerName: 'Customer' },
+        { field: 'activity', width: 150, headerName: 'Activity' },
+        { field: 'customer', width: 200, headerName: 'Customer' },
 
 
         // DELETE -functionality
@@ -65,7 +65,7 @@ export default function Traininglist() {
     return (
         <>
             {/* display table */}
-            <div style={{ width: '100%', height: 500, margin: 'auto' }}>
+            <div style={{ width: '90%', height: 500, margin: 'auto' }}>
                 <DataGrid
                     rows={trainings}
                     columns={columns}
