@@ -1,15 +1,35 @@
-import { useState, useEffect } from "react";
-import type { Training } from "../types";
 import dayjs from "dayjs";
+import type { Training } from "../types";
+import { useState, useEffect } from "react";
+import { getCustomerByUrl } from "../customerAPI";
 import { deleteTraining, getTrainings } from "../trainingAPI";
-// import type { Customer } from "../types";
 
-// style imports
-import { DataGrid } from "@mui/x-data-grid";
-import type { GridColDef, GridRenderCellParams } from "@mui/x-data-grid";
+// MUI style imports
+import {
+    DataGrid,
+    GridOverlay,
+    type GridColDef,
+    type GridRenderCellParams
+} from "@mui/x-data-grid";
 import Button from "@mui/material/Button";
+import CircularProgress from "@mui/material/CircularProgress";
+
+
+// initialize custom loading overlay for DataGrid
+function CustomLoadingOverlay() {
+    return (
+        <GridOverlay>
+            <div style={{ position: "absolute", top: "50%" }}>
+                <CircularProgress />
+            </div>
+        </GridOverlay>
+    );
+}
 
 export default function Traininglist() {
+    // set loading state
+    const [loading, setLoading] = useState(true);
+
     // initial state
     const [trainings, setTrainings] = useState<Training[]>([]);
 
@@ -19,12 +39,42 @@ export default function Traininglist() {
     }, []);
 
     // fetch trainings from API
-    // TO DO: attach customer names
-    const fetchTrainings = () => {
-        getTrainings()
-            .then(data => setTrainings(data._embedded.trainings))
-            .catch(err => console.error(err))
-    }
+
+    const fetchTrainings = async () => {
+        setLoading(true);
+
+        try {
+            const data = await getTrainings();
+            const tr = data?._embedded?.trainings ?? [];
+
+            // Haetaan asiakkaan nimi trainingin customer-linkistä
+            const trainingsWithNames = await Promise.all(
+                tr.map(async (t: Training) => {
+                    const customerUrl = t._links?.customer?.href;
+
+                    if (!customerUrl) return { ...t, customer: "" };
+
+                    try {
+                        const cust = await getCustomerByUrl(customerUrl);
+                        return {
+                            ...t,
+                            customer: `${cust.firstname} ${cust.lastname}`,
+                        };
+                    } catch {
+                        return { ...t, customer: "" };
+                    }
+                })
+            );
+
+            setTrainings(trainingsWithNames);
+
+        } catch (err) {
+            console.error("Failed to fetch trainings", err);
+
+        } finally {
+            setLoading(false);
+        }
+    };
 
     //fetch delete-function from API
     const handleDelete = (url: string) => {
@@ -68,12 +118,16 @@ export default function Traininglist() {
 
     return (
         <>
-            <h3 style={{ margin: '20px' }}>Trainings</h3>
-            {/* display table */}
-            <div style={{ width: '90%', height: 500, margin: 'auto' }}>
+            <h3 style={{ margin: "20px" }}>Trainings</h3>
+
+            <div style={{ width: "90%", height: 500, margin: "auto" }}>
                 <DataGrid
                     rows={trainings}
                     columns={columns}
+                    loading={loading}
+                    slots={{
+                        loadingOverlay: CustomLoadingOverlay,
+                    }}
                     getRowId={(row: Training) => row._links.self.href}
                     autoPageSize
                     rowSelection={false}

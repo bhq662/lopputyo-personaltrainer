@@ -72,8 +72,8 @@ export default function App() {
               Personal Training
             </Typography>
 
-            <Button color="inherit" component={Link} to="/">Customers</Button>
-            <Button color="inherit" component={Link} to="/gettrainings">Trainings</Button>
+            <Button color="inherit" component={Link} to="/customers">Customers</Button>
+            <Button color="inherit" component={Link} to="/trainings">Trainings</Button>
 
             <Search>
               <SearchIconWrapper>

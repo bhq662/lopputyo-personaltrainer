@@ -11,6 +11,17 @@ export function getCustomers() {
         })
 }
 
+export function getCustomerByUrl(href: string) {
+    if (!href) throw new Error('getCustomerByUrl requires a href');
+    return fetch(href)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Error when fetching customer by url: " + response.statusText);
+            }
+            return response.json();
+        })
+}
+
 export function deleteCustomer(url: string) {
     return fetch(url, { method: "DELETE" })
         .then(response => {
