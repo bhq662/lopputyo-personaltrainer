@@ -1,5 +1,8 @@
+const TRAINING_API_BASE = import.meta.env.VITE_API_TRAINING_URL as string;
+if (!TRAINING_API_BASE) throw new Error('VITE_API_TRAINING_URL is not defined');
+
 export function getTrainings() {
-    return fetch('https://customer-rest-service-frontend-personaltrainer.2.rahtiapp.fi/api/trainings')
+    return fetch(new URL('trainings', TRAINING_API_BASE).toString())
         .then(response => {
             if (!response.ok) {
                 throw new Error("Error when fetching trainings: " + response.statusText);
@@ -9,7 +12,10 @@ export function getTrainings() {
 }
 
 export function getCustomers() {
-    return fetch('https://customer-rest-service-frontend-personaltrainer.2.rahtiapp.fi/api/customers')
+    const CUSTOMER_API_BASE = import.meta.env.VITE_API_CUSTOMER_URL as string;
+    if (!CUSTOMER_API_BASE) throw new Error('VITE_API_CUSTOMER_URL is not defined');
+
+    return fetch(new URL('customers', CUSTOMER_API_BASE).toString())
         .then(response => {
             if (!response.ok) {
                 throw new Error("Error when fetching customers: " + response.statusText);
@@ -24,6 +30,7 @@ export function deleteTraining(url: string) {
             if (!response.ok) {
                 throw new Error("Error when deleting training: " + response.statusText);
             }
-            response.json()
+            // handle 204 No Content
+            return response.status === 204 ? null : response.json();
         })
 }
