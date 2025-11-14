@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import type { Training } from "../types";
+import dayjs from "dayjs";
 import { deleteTraining, getTrainings } from "../trainingAPI";
 // import type { Customer } from "../types";
 
@@ -36,7 +37,10 @@ export default function Traininglist() {
 
     // define table layout, includes add, edit and delete -functions
     const columns: GridColDef[] = [
-        { field: 'date', width: 250, headerName: 'Date' },
+        {
+            field: 'date', width: 250, headerName: 'Date', renderCell: (params: GridRenderCellParams) =>
+                <span>{params.value ? dayjs(params.value as string).format('DD.MM.YYYY HH:mm') : ''}</span>
+        },
         { field: 'duration', width: 125, headerName: 'Duration (min)' },
         { field: 'activity', width: 150, headerName: 'Activity' },
         { field: 'customer', width: 200, headerName: 'Customer' },

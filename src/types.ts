@@ -1,3 +1,8 @@
+import dayjs from 'dayjs';
+
+// format date
+dayjs().format();
+
 export type Customer = {
     firstname: string;
     lastname: string;
@@ -23,7 +28,8 @@ export type Customer = {
 }
 
 export type Training = {
-    date: Date;
+    date: string;
+    fDate?: string;
     duration: number;
     activity: string;
     _links: {
