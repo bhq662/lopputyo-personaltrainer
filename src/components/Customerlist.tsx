@@ -64,6 +64,7 @@ export default function Customerlist() {
 
     return (
         <>
+            <h3 style={{ margin: '20px' }}>Customers</h3>
             {/* display table */}
             <div style={{ width: '90%', height: 500, margin: 'auto' }}>
                 <DataGrid

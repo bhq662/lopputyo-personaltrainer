@@ -89,10 +89,6 @@ export default function App() {
 
         <Outlet />
 
-        {/* <h3>Customers</h3>
-        <Customerlist />
-        <h3>Trainings</h3>
-        <Traininglist /> */}
         <CssBaseline />
       </Container>
     </>

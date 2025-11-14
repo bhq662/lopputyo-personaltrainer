@@ -68,6 +68,7 @@ export default function Traininglist() {
 
     return (
         <>
+            <h3 style={{ margin: '20px' }}>Trainings</h3>
             {/* display table */}
             <div style={{ width: '90%', height: 500, margin: 'auto' }}>
                 <DataGrid
