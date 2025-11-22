@@ -85,7 +85,7 @@ export default function AddCustomer({ fetchCustomers }: AddCustomerProps) {
                 New Customer
             </Button>
             <Dialog open={open} onClose={handleClose}>
-                <DialogTitle>Add new Customer</DialogTitle>
+                <DialogTitle>Add New Customer</DialogTitle>
                 <DialogContent>
                     <TextField
                         margin="dense"
