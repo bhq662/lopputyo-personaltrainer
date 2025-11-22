@@ -83,7 +83,10 @@ export default function Customerlist() {
             width: 180,
             renderCell: (params: GridRenderCellParams) => {
                 const row = params.row as Customer;
+                // only render actions for real rows that have a self href (avoid empty/placeholder rows)
                 const href = row?._links?.self?.href;
+                if (!href) return null;
+
                 return (
                     <>
                         <EditCustomer
@@ -93,7 +96,7 @@ export default function Customerlist() {
                         <Button
                             color="error"
                             size="small"
-                            onClick={() => href && handleDelete(href)}
+                            onClick={() => handleDelete(href)}
                             style={{ marginRight: 2 }}>
                             DELETE
                         </Button>
@@ -101,7 +104,6 @@ export default function Customerlist() {
                 );
             }
         }
-
 
     ]
 
