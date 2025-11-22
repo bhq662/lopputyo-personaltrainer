@@ -1,3 +1,5 @@
+import type { Customer } from "./types";
+
 const CUSTOMER_API_BASE = import.meta.env.VITE_API_CUSTOMER_URL as string;
 if (!CUSTOMER_API_BASE) throw new Error('VITE_API_CUSTOMER_URL is not defined');
 
@@ -22,13 +24,26 @@ export function getCustomerByUrl(href: string) {
         })
 }
 
+export function saveCustomer(newCustomer: Customer) {
+    return fetch(import.meta.env.VITE_API_CUSTOMER_URL + "/customers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newCustomer)
+    })
+        .then(response => {
+            if (!response.ok)
+                throw new Error("Error when adding a Customer");
+            return response.json();
+        });
+}
+
 export function deleteCustomer(url: string) {
     return fetch(url, { method: "DELETE" })
         .then(response => {
             if (!response.ok) {
                 throw new Error("Error when deleting customer: " + response.statusText);
             }
-            // handle 204 No Content
+            // Handle 204 No Content
             return response.status === 204 ? null : response.json();
         })
 }
