@@ -15,6 +15,7 @@ import {
 } from "@mui/x-data-grid";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
+import EditTraining from "./EditTraining";
 
 // initialize custom loading overlay for DataGrid
 function CustomLoadingOverlay() {
@@ -95,23 +96,36 @@ export default function Traininglist() {
         { field: 'activity', width: 150, headerName: 'Activity' },
         { field: 'customer', width: 200, headerName: 'Customer' },
 
-
-        // DELETE -functionality
+        // ACTIONS column: DELETE + EDIT
         {
-            field: '_links.self.href',
+            field: 'actions',
             headerName: ' ',
             sortable: false,
             filterable: false,
-            renderCell: (params: GridRenderCellParams) =>
-                <Button
-                    color="error"
-                    size="small"
-                    onClick={() => handleDelete(params.id as string)}>
-                    DELETE
-                </Button>
-        }
+            width: 180,
+            renderCell: (params: GridRenderCellParams) => {
+                const row = params.row as Training;
+                // only render actions for real rows that have a self href (avoid empty/placeholder rows)
+                const href = row?._links?.self?.href;
+                if (!href) return null;
 
-        // TODO: EDIT -functionality (lecture on 1.11.)
+                return (
+                    <>
+                        <EditTraining
+                            fetchTrainings={fetchTrainings}
+                            TrainingRow={row}
+                        />
+                        <Button
+                            color="error"
+                            size="small"
+                            onClick={() => handleDelete(href)}
+                            style={{ marginRight: 2 }}>
+                            DELETE
+                        </Button>
+                    </>
+                );
+            }
+        }
 
     ]
 

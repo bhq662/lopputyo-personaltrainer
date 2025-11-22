@@ -43,6 +43,18 @@ export function getCustomerByUrl(href: string) {
         })
 }
 
+export function editTraining(url: string, updatedTraining: Training) {
+    return fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedTraining)
+    })
+        .then(response => {
+            if (!response.ok)
+                throw new Error("Error when editing Customer");
+            return response.json();
+        });
+}
 
 export async function saveTraining(newTraining: Training) {
     const url = new URL('trainings', TRAINING_API_BASE).toString();
