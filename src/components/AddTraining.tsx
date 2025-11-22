@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Training } from '../types';
 import { saveTraining } from '../trainingAPI';
+import { getCustomers } from '../customerAPI';
 
 // style imports
 import Button from '@mui/material/Button';
@@ -9,6 +10,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
+import Autocomplete from '@mui/material/Autocomplete';
 
 // added as a type here, because prop is unused anywhere else
 type AddTrainingProps = {
@@ -35,6 +37,10 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
         }
     });
 
+    // customer options for the autocomplete: { label: "First Last", href: "/api/customers/..." }
+    const [customerOptions, setCustomerOptions] = useState<{ label: string; href: string }[]>([]);
+    const [selectedCustomer, setSelectedCustomer] = useState<{ label: string; href: string } | null>(null);
+
     // error flags for required fields
     const [errors, setErrors] = useState({
         date: false,
@@ -42,6 +48,20 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
         activity: false,
         customer: false
     });
+
+    useEffect(() => {
+        // load customers once for the autocomplete
+        getCustomers()
+            .then(data => {
+                const customers = data?._embedded?.customers ?? [];
+                const opts = customers.map((c: { firstname: string; lastname: string; _links: { self: { href: string } } }) => ({
+                    label: `${c.firstname} ${c.lastname}`,
+                    href: c._links?.self?.href ?? ''
+                })).filter((o: { label: string; href: string }) => o.href);
+                setCustomerOptions(opts);
+            })
+            .catch(err => console.error('Failed to load customers for AddTraining', err));
+    }, []);
 
     const handleClickOpen = () => {
         setOpen(true);
@@ -65,6 +85,7 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
                 }
             }
         });
+        setSelectedCustomer(null);
         setErrors({ date: false, duration: false, activity: false, customer: false });
     };
 
@@ -74,6 +95,10 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
     };
 
     const handleSave = () => {
+        // ensure we store the href of selected customer
+        if (selectedCustomer && selectedCustomer.href) {
+            setTraining(prev => ({ ...prev, customer: selectedCustomer.href }));
+        }
         // validate: require non-empty date, activity, customer and duration > 0
         const newErrors = {
             date: !Training.date || Training.date.trim() === "",
@@ -89,7 +114,10 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
             return;
         }
 
-        saveTraining(Training)
+        // ensure payload uses customer href
+        const payload: Training = { ...Training, customer: selectedCustomer?.href ?? Training.customer };
+
+        saveTraining(payload)
             .then(() => {
                 fetchTrainings();
                 handleClose();
@@ -148,19 +176,30 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
                         error={errors.activity}
                         helperText={errors.activity ? "Activity is required" : ""}
                     />
-                    <TextField
-                        required
-                        margin="dense"
-                        label="Customer (href or name)"
-                        value={Training.customer}
-                        onChange={event => {
-                            setTraining({ ...Training, customer: event.target.value });
+                    <Autocomplete
+                        options={customerOptions}
+                        getOptionLabel={(option) => option.label}
+                        value={selectedCustomer}
+                        onChange={(_event, value) => {
+                            setSelectedCustomer(value);
+                            if (value && value.href) {
+                                setTraining(prev => ({ ...prev, customer: value.href }));
+                            }
                             if (errors.customer) setErrors(prev => ({ ...prev, customer: false }));
                         }}
-                        fullWidth
-                        variant="standard"
-                        error={errors.customer}
-                        helperText={errors.customer ? "Customer is required" : ""}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                required
+                                margin="dense"
+                                label="Customer"
+                                fullWidth
+                                variant="standard"
+                                error={errors.customer}
+                                helperText={errors.customer ? "Customer is required (select from list)" : ""}
+                            />
+                        )}
+                        sx={{ marginTop: 1 }}
                     />
                 </DialogContent>
                 <DialogActions>
