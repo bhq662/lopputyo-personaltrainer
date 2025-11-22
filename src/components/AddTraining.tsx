@@ -3,7 +3,11 @@ import type { Training } from '../types';
 import { saveTraining } from '../trainingAPI';
 import { getCustomers } from '../customerAPI';
 
-// style imports
+import type { Dayjs } from 'dayjs';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
@@ -12,36 +16,29 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Autocomplete from '@mui/material/Autocomplete';
 
-// added as a type here, because prop is unused anywhere else
 type AddTrainingProps = {
     fetchTrainings: () => void;
 }
 
 export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
     const [open, setOpen] = useState(false);
-    const [Training, setTraining] = useState<Training>({
+    const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
+
+    const [training, setTraining] = useState<Training>({
         date: "",
         duration: 0,
         activity: "",
         customer: "",
         _links: {
-            self: {
-                href: ''
-            },
-            customer: {
-                href: ''
-            },
-            training: {
-                href: ''
-            }
+            self: { href: '' },
+            customer: { href: '' },
+            training: { href: '' }
         }
     });
 
-    // customer options for the autocomplete: { label: "First Last", href: "/api/customers/..." }
     const [customerOptions, setCustomerOptions] = useState<{ label: string; href: string }[]>([]);
     const [selectedCustomer, setSelectedCustomer] = useState<{ label: string; href: string } | null>(null);
 
-    // error flags for required fields
     const [errors, setErrors] = useState({
         date: false,
         duration: false,
@@ -50,22 +47,26 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
     });
 
     useEffect(() => {
-        // load customers once for the autocomplete
         getCustomers()
             .then(data => {
                 const customers = data?._embedded?.customers ?? [];
-                const opts = customers.map((c: { firstname: string; lastname: string; _links: { self: { href: string } } }) => ({
-                    label: `${c.firstname} ${c.lastname}`,
-                    href: c._links?.self?.href ?? ''
-                })).filter((o: { label: string; href: string }) => o.href);
+                type Customer = {
+                    firstname: string;
+                    lastname: string;
+                    _links: {
+                        self: { href: string };
+                    };
+                };
+
+                const opts = customers
+                    .map((c: Customer) => ({ label: `${c.firstname} ${c.lastname}`, href: c._links?.self?.href ?? '' }))
+                    .filter((o: { label: string; href: string }) => o.href);
                 setCustomerOptions(opts);
             })
             .catch(err => console.error('Failed to load customers for AddTraining', err));
     }, []);
 
-    const handleClickOpen = () => {
-        setOpen(true);
-    };
+    const handleClickOpen = () => setOpen(true);
 
     const resetForm = () => {
         setTraining({
@@ -74,18 +75,13 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
             activity: "",
             customer: "",
             _links: {
-                self: {
-                    href: ''
-                },
-                customer: {
-                    href: ''
-                },
-                training: {
-                    href: ''
-                }
+                self: { href: '' },
+                customer: { href: '' },
+                training: { href: '' }
             }
         });
         setSelectedCustomer(null);
+        setSelectedDate(null);
         setErrors({ date: false, duration: false, activity: false, customer: false });
     };
 
@@ -94,35 +90,36 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
         resetForm();
     };
 
-    const handleSave = () => {
-        // ensure we store the href of selected customer
-        if (selectedCustomer && selectedCustomer.href) {
-            setTraining(prev => ({ ...prev, customer: selectedCustomer.href }));
+    const handleSave = async () => {
+        // ensure training.date is a backend-friendly string (YYYY-MM-DD)
+        if (selectedDate) {
+            // Dayjs format method -> 'YYYY-MM-DD'
+            setTraining(prev => ({ ...prev, date: selectedDate.format('YYYY-MM-DD') }));
         }
-        // validate: require non-empty date, activity, customer and duration > 0
+
+        // ensure we use selected customer's href
+        const customerHref = selectedCustomer?.href ?? training.customer;
+
         const newErrors = {
-            date: !Training.date || Training.date.trim() === "",
-            duration: !Training.duration || Training.duration <= 0,
-            activity: !Training.activity || Training.activity.trim() === "",
-            customer: !Training.customer || Training.customer.trim() === ""
+            date: !(selectedDate || (training.date && training.date.trim() !== "")),
+            duration: !training.duration || training.duration <= 0,
+            activity: !training.activity || training.activity.trim() === "",
+            customer: !customerHref || customerHref.trim() === ""
         };
         setErrors(newErrors);
 
-        const hasError = Object.values(newErrors).some(Boolean);
-        if (hasError) {
-            // keep dialog open and show red fields / helper text
-            return;
+        if (Object.values(newErrors).some(Boolean)) return;
+
+        const payload: Training = { ...training, date: selectedDate ? selectedDate.format('YYYY-MM-DD') : training.date, customer: customerHref };
+
+        try {
+            await saveTraining(payload);
+            fetchTrainings();
+            handleClose();
+        } catch (err) {
+            console.error('saveTraining failed', err);
+            // optionally show UI feedback here
         }
-
-        // ensure payload uses customer href
-        const payload: Training = { ...Training, customer: selectedCustomer?.href ?? Training.customer };
-
-        saveTraining(payload)
-            .then(() => {
-                fetchTrainings();
-                handleClose();
-            })
-            .catch(err => console.error(err));
     };
 
     return (
@@ -130,31 +127,42 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
             <Button variant="contained" size="medium" onClick={handleClickOpen}>
                 New Training
             </Button>
+
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Add New Training</DialogTitle>
                 <DialogContent>
-                    <TextField
-                        required
-                        margin="dense"
-                        label="Date"
-                        value={Training.date}
-                        onChange={event => {
-                            setTraining({ ...Training, date: event.target.value });
-                            if (errors.date) setErrors(prev => ({ ...prev, date: false }));
-                        }}
-                        fullWidth
-                        variant="standard"
-                        error={errors.date}
-                        helperText={errors.date ? "Date is required" : ""}
-                    />
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                        <DatePicker
+                            enableAccessibleFieldDOMStructure={false}
+                            label="Date"
+                            value={selectedDate}
+                            onChange={(value) => {
+                                setSelectedDate(value);
+                                if (value) setTraining(prev => ({ ...prev, date: value.format('YYYY-MM-DD') }));
+                                if (errors.date) setErrors(prev => ({ ...prev, date: false }));
+                            }}
+                            slots={{ textField: TextField }}
+                            slotProps={{
+                                textField: {
+                                    required: true,
+                                    margin: "dense",
+                                    fullWidth: true,
+                                    variant: "standard",
+                                    error: errors.date,
+                                    helperText: errors.date ? "Date is required" : "",
+                                },
+                            }}
+                        />
+                    </LocalizationProvider>
+
                     <TextField
                         required
                         margin="dense"
                         label="Duration (min)"
                         type="number"
-                        value={Training.duration}
-                        onChange={event => {
-                            setTraining({ ...Training, duration: Number(event.target.value) });
+                        value={training.duration}
+                        onChange={e => {
+                            setTraining({ ...training, duration: Number(e.target.value) });
                             if (errors.duration) setErrors(prev => ({ ...prev, duration: false }));
                         }}
                         fullWidth
@@ -162,13 +170,14 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
                         error={errors.duration}
                         helperText={errors.duration ? "Duration must be greater than 0" : ""}
                     />
+
                     <TextField
                         required
                         margin="dense"
                         label="Activity"
-                        value={Training.activity}
-                        onChange={event => {
-                            setTraining({ ...Training, activity: event.target.value });
+                        value={training.activity}
+                        onChange={e => {
+                            setTraining({ ...training, activity: e.target.value });
                             if (errors.activity) setErrors(prev => ({ ...prev, activity: false }));
                         }}
                         fullWidth
@@ -176,15 +185,14 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
                         error={errors.activity}
                         helperText={errors.activity ? "Activity is required" : ""}
                     />
+
                     <Autocomplete
                         options={customerOptions}
                         getOptionLabel={(option) => option.label}
                         value={selectedCustomer}
-                        onChange={(_event, value) => {
+                        onChange={(_e, value) => {
                             setSelectedCustomer(value);
-                            if (value && value.href) {
-                                setTraining(prev => ({ ...prev, customer: value.href }));
-                            }
+                            if (value && value.href) setTraining(prev => ({ ...prev, customer: value.href }));
                             if (errors.customer) setErrors(prev => ({ ...prev, customer: false }));
                         }}
                         renderInput={(params) => (
@@ -202,11 +210,10 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
                         sx={{ marginTop: 1 }}
                     />
                 </DialogContent>
+
                 <DialogActions>
                     <Button onClick={handleClose}>Cancel</Button>
-                    <Button onClick={handleSave}>
-                        Save
-                    </Button>
+                    <Button onClick={handleSave}>Save</Button>
                 </DialogActions>
             </Dialog>
         </>
