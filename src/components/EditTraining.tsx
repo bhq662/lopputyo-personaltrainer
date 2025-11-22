@@ -7,7 +7,7 @@ import type { Dayjs } from 'dayjs';
 import dayjs from 'dayjs';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
 // style imports
 import Button from '@mui/material/Button';
@@ -139,7 +139,7 @@ export default function EditTraining({ fetchTrainings, TrainingRow }: EditTraini
 
         const payload: Training = {
             ...training,
-            date: selectedDate ? selectedDate.format('YYYY-MM-DD') : training.date,
+            date: selectedDate ? selectedDate.toISOString() : training.date,
             customer: customerHref
         };
 
@@ -191,13 +191,14 @@ export default function EditTraining({ fetchTrainings, TrainingRow }: EditTraini
                 <DialogTitle>Edit Training</DialogTitle>
                 <DialogContent>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DatePicker
+                        <DateTimePicker
                             enableAccessibleFieldDOMStructure={false}
-                            label="Date"
+                            label="Date & Time"
                             value={selectedDate}
+                            format="DD.MM.YYYY HH:mm"
                             onChange={(value) => {
                                 setSelectedDate(value);
-                                if (value) setTraining(prev => ({ ...prev, date: value.format('YYYY-MM-DD') }));
+                                if (value) setTraining(prev => ({ ...prev, date: value.toISOString() }));
                                 if (errors.date) setErrors(prev => ({ ...prev, date: false }));
                             }}
                             slots={{ textField: TextField }}
@@ -208,7 +209,7 @@ export default function EditTraining({ fetchTrainings, TrainingRow }: EditTraini
                                     fullWidth: true,
                                     variant: "standard",
                                     error: errors.date,
-                                    helperText: errors.date ? "Date is required" : "",
+                                    helperText: errors.date ? "Date and time are required" : "",
                                 },
                             }}
                         />
