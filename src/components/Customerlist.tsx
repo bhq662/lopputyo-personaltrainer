@@ -12,6 +12,7 @@ import {
 } from "@mui/x-data-grid";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
+import EditCustomer from "./EditCustomer";
 
 // initialize custom loading overlay for DataGrid
 function CustomLoadingOverlay() {
@@ -73,22 +74,34 @@ export default function Customerlist() {
         { field: 'email', width: 180, headerName: 'Email' },
         { field: 'phone', width: 150, headerName: 'Phone number' },
 
-        // DELETE -functionality
+        // ACTIONS column: DELETE + EDIT
         {
-            field: '_links.self.href',
+            field: 'actions',
             headerName: ' ',
             sortable: false,
             filterable: false,
-            renderCell: (params: GridRenderCellParams) =>
-                <Button
-                    color="error"
-                    size="small"
-                    onClick={() => handleDelete(params.id as string)}>
-                    DELETE
-                </Button>
+            width: 180,
+            renderCell: (params: GridRenderCellParams) => {
+                const row = params.row as Customer;
+                const href = row?._links?.self?.href;
+                return (
+                    <>
+                        <EditCustomer
+                            fetchCustomers={fetchCustomers}
+                            CustomerRow={row}
+                        />
+                        <Button
+                            color="error"
+                            size="small"
+                            onClick={() => href && handleDelete(href)}
+                            style={{ marginRight: 2 }}>
+                            DELETE
+                        </Button>
+                    </>
+                );
+            }
         }
 
-        // TODO: EDIT -functionality (lecture on 1.11.)
 
     ]
 

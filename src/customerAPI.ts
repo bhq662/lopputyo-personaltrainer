@@ -24,6 +24,19 @@ export function getCustomerByUrl(href: string) {
         })
 }
 
+export function editCustomer(url: string, updatedCustomer: Customer) {
+    return fetch(url, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(updatedCustomer)
+    })
+        .then(response => {
+            if (!response.ok)
+                throw new Error("Error when editing Customer");
+            return response.json();
+        });
+}
+
 export function saveCustomer(newCustomer: Customer) {
     const url = new URL('customers', CUSTOMER_API_BASE).toString();
     return fetch(url, {
