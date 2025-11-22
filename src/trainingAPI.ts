@@ -1,5 +1,10 @@
 import type { Training } from "./types";
 
+// date formatting imports
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+dayjs.extend(customParseFormat);
+
 const TRAINING_API_BASE = import.meta.env.VITE_API_TRAINING_URL as string;
 if (!TRAINING_API_BASE) throw new Error('VITE_API_TRAINING_URL is not defined');
 
@@ -39,21 +44,51 @@ export function getCustomerByUrl(href: string) {
 }
 
 
-export function saveTraining(newTraining: Training) {
-    const url = new URL('Trainings', TRAINING_API_BASE).toString();
-    return fetch(url, {
+export async function saveTraining(newTraining: Training) {
+    const url = new URL('trainings', TRAINING_API_BASE).toString();
+
+    // parse input using dayjs with common formats (same lib used in Traininglist)
+    let dateToSend: string | undefined = newTraining.date;
+    if (dateToSend) {
+        const formats = [
+            'DD.MM.YYYY HH:mm',
+            'DD.MM.YYYY',
+            'YYYY-MM-DDTHH:mm',
+            'YYYY-MM-DD',
+            'YYYY-MM-DDTHH:mm:ss.SSSZ'
+        ];
+        let parsed = dayjs(dateToSend, formats, true); // strict parse with known formats
+        if (!parsed.isValid()) {
+            parsed = dayjs(dateToSend); // fallback to Date parsing
+        }
+        if (parsed.isValid()) {
+            // send ISO if time present, otherwise yyyy-MM-dd which backend accepts
+            dateToSend = dateToSend.includes(':') ? parsed.toISOString() : parsed.format('YYYY-MM-DD');
+        }
+    }
+
+    const payload = {
+        date: dateToSend,
+        duration: newTraining.duration,
+        activity: newTraining.activity,
+        customer: newTraining.customer
+    };
+
+    console.log("saveTraining -> POST", url, payload);
+
+    const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newTraining)
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error("Error when adding a Training: " + response.statusText);
-            }
-            // handle APIs that return no JSON body
-            if (response.status === 204) return null;
-            return response.json().catch(() => null);
-        });
+        body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+        const body = await res.text().catch(() => "<no body>");
+        throw new Error(`Error when adding a Training: ${res.status} ${res.statusText} - ${body}`);
+    }
+
+    if (res.status === 204) return null;
+    return res.json().catch(() => null);
 }
 
 export function deleteTraining(url: string) {
