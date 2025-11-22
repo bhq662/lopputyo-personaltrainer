@@ -12,6 +12,7 @@ import {
 } from "@mui/x-data-grid";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
+import AddCustomer from "./AddCustomer";
 
 // initialize custom loading overlay for DataGrid
 function CustomLoadingOverlay() {
@@ -88,7 +89,6 @@ export default function Customerlist() {
                 </Button>
         }
 
-        // TODO: ADD -functionality (lecture on 1.11.)
         // TODO: EDIT -functionality (lecture on 1.11.)
 
     ]
@@ -96,6 +96,9 @@ export default function Customerlist() {
     return (
         <>
             <h3 style={{ margin: "20px" }}>Customers</h3>
+
+            {/* ADD CUSTOMER-BUTTON IS HERE, CALLS AddCustomer.tsx */}
+            <AddCustomer fetchCustomers={fetchCustomers} />
 
             <div style={{ width: "95%", height: 600, margin: "auto" }}>
                 <DataGrid

@@ -25,15 +25,19 @@ export function getCustomerByUrl(href: string) {
 }
 
 export function saveCustomer(newCustomer: Customer) {
-    return fetch(import.meta.env.VITE_API_CUSTOMER_URL + "/customers", {
+    const url = new URL('customers', CUSTOMER_API_BASE).toString();
+    return fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(newCustomer)
     })
         .then(response => {
-            if (!response.ok)
-                throw new Error("Error when adding a Customer");
-            return response.json();
+            if (!response.ok) {
+                throw new Error("Error when adding a Customer: " + response.statusText);
+            }
+            // handle APIs that return no JSON body
+            if (response.status === 204) return null;
+            return response.json().catch(() => null);
         });
 }
 
