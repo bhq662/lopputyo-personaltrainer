@@ -1,5 +1,3 @@
-// THIS TSX IS USED AS A WHOLE IN Customerlist.tsx
-
 import { useState } from 'react';
 import type { Customer } from '../types';
 import { saveCustomer } from '../customerAPI';
@@ -12,7 +10,7 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 
-// tyypitetään tässä, koska muualla ei käytetä
+// added as a type here, because prop is unused anywhere else
 type AddCustomerProps = {
     fetchCustomers: () => void;
 }
@@ -83,7 +81,7 @@ export default function AddCustomer({ fetchCustomers }: AddCustomerProps) {
 
     return (
         <>
-            <Button variant="outlined" onClick={handleClickOpen}>
+            <Button variant="contained" size="medium" onClick={handleClickOpen}>
                 New Customer
             </Button>
             <Dialog open={open} onClose={handleClose}>

@@ -95,10 +95,10 @@ export default function Customerlist() {
 
     return (
         <>
-            <h3 style={{ margin: "20px" }}>Customers</h3>
-
-            {/* ADD CUSTOMER-BUTTON IS HERE, CALLS AddCustomer.tsx */}
-            <AddCustomer fetchCustomers={fetchCustomers} />
+            <div style={{ width: "95%", margin: "20px auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h2 style={{ margin: 0 }}>Customers</h2>
+                <AddCustomer fetchCustomers={fetchCustomers} />
+            </div>
 
             <div style={{ width: "95%", height: 600, margin: "auto" }}>
                 <DataGrid
