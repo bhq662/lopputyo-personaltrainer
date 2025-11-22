@@ -1,7 +1,7 @@
 import type { Customer } from "../types";
 import { useState, useEffect } from "react";
-
 import { deleteCustomer, getCustomers } from "../customerAPI";
+import AddCustomer from "./AddCustomer";
 
 // MUI style imports
 import {
@@ -12,7 +12,6 @@ import {
 } from "@mui/x-data-grid";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
-import AddCustomer from "./AddCustomer";
 
 // initialize custom loading overlay for DataGrid
 function CustomLoadingOverlay() {

@@ -4,13 +4,11 @@ const TRAINING_API_BASE = import.meta.env.VITE_API_TRAINING_URL as string;
 if (!TRAINING_API_BASE) throw new Error('VITE_API_TRAINING_URL is not defined');
 
 export function getTrainings() {
-    const Training_API_BASE = import.meta.env.VITE_API_Training_URL as string;
-    if (!Training_API_BASE) throw new Error('VITE_API_Training_URL is not defined');
-
-    return fetch(new URL('Trainings', Training_API_BASE).toString())
+    // use the top-level TRAINING_API_BASE (case-sensitive) and correct endpoint
+    return fetch(new URL('trainings', TRAINING_API_BASE).toString())
         .then(response => {
             if (!response.ok) {
-                throw new Error("Error when fetching Trainings: " + response.statusText);
+                throw new Error("Error when fetching trainings: " + response.statusText);
             }
             return response.json();
         })

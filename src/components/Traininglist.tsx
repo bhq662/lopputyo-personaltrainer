@@ -3,6 +3,8 @@ import type { Training } from "../types";
 import { useState, useEffect } from "react";
 import { getCustomerByUrl } from "../customerAPI";
 import { deleteTraining, getTrainings } from "../trainingAPI";
+import AddTraining from "./AddTraining";
+
 
 // MUI style imports
 import {
@@ -13,7 +15,6 @@ import {
 } from "@mui/x-data-grid";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
-
 
 // initialize custom loading overlay for DataGrid
 function CustomLoadingOverlay() {
@@ -39,7 +40,6 @@ export default function Traininglist() {
     }, []);
 
     // fetch trainings from API
-
     const fetchTrainings = async () => {
         setLoading(true);
 
@@ -47,7 +47,7 @@ export default function Traininglist() {
             const data = await getTrainings();
             const tr = data?._embedded?.trainings ?? [];
 
-            // Haetaan asiakkaan nimi trainingin customer-linkistä
+            // Fetch customer's name from training's Customer-link
             const trainingsWithNames = await Promise.all(
                 tr.map(async (t: Training) => {
                     const customerUrl = t._links?.customer?.href;
@@ -111,14 +111,16 @@ export default function Traininglist() {
                 </Button>
         }
 
-        // TODO: ADD -functionality (lecture on 1.11.)
         // TODO: EDIT -functionality (lecture on 1.11.)
 
     ]
 
     return (
         <>
-            <h3 style={{ margin: "20px" }}>Trainings</h3>
+            <div style={{ width: "95%", margin: "20px auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <h2 style={{ margin: 0 }}>Trainings</h2>
+                <AddTraining fetchTrainings={fetchTrainings} />
+            </div>
 
             <div style={{ width: "90%", height: 500, margin: "auto" }}>
                 <DataGrid

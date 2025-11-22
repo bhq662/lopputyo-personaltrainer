@@ -35,12 +35,19 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
         }
     });
 
+    // error flags for required fields
+    const [errors, setErrors] = useState({
+        date: false,
+        duration: false,
+        activity: false,
+        customer: false
+    });
+
     const handleClickOpen = () => {
         setOpen(true);
     };
 
-    const handleClose = () => {
-        setOpen(false);
+    const resetForm = () => {
         setTraining({
             date: "",
             duration: 0,
@@ -57,14 +64,31 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
                     href: ''
                 }
             }
-        })
+        });
+        setErrors({ date: false, duration: false, activity: false, customer: false });
+    };
+
+    const handleClose = () => {
+        setOpen(false);
+        resetForm();
     };
 
     const handleSave = () => {
-        if (Training == null) {
-            alert("Fill all fields first");
+        // validate: require non-empty date, activity, customer and duration > 0
+        const newErrors = {
+            date: !Training.date || Training.date.trim() === "",
+            duration: !Training.duration || Training.duration <= 0,
+            activity: !Training.activity || Training.activity.trim() === "",
+            customer: !Training.customer || Training.customer.trim() === ""
+        };
+        setErrors(newErrors);
+
+        const hasError = Object.values(newErrors).some(Boolean);
+        if (hasError) {
+            // keep dialog open and show red fields / helper text
             return;
         }
+
         saveTraining(Training)
             .then(() => {
                 fetchTrainings();
@@ -82,37 +106,61 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
                 <DialogTitle>Add New Training</DialogTitle>
                 <DialogContent>
                     <TextField
+                        required
                         margin="dense"
                         label="Date"
                         value={Training.date}
-                        onChange={event => setTraining({ ...Training, date: event.target.value })}
+                        onChange={event => {
+                            setTraining({ ...Training, date: event.target.value });
+                            if (errors.date) setErrors(prev => ({ ...prev, date: false }));
+                        }}
                         fullWidth
                         variant="standard"
+                        error={errors.date}
+                        helperText={errors.date ? "Date is required" : ""}
                     />
                     <TextField
+                        required
                         margin="dense"
-                        label="Duration"
+                        label="Duration (min)"
                         type="number"
                         value={Training.duration}
-                        onChange={event => setTraining({ ...Training, duration: Number(event.target.value) })}
+                        onChange={event => {
+                            setTraining({ ...Training, duration: Number(event.target.value) });
+                            if (errors.duration) setErrors(prev => ({ ...prev, duration: false }));
+                        }}
                         fullWidth
                         variant="standard"
+                        error={errors.duration}
+                        helperText={errors.duration ? "Duration must be greater than 0" : ""}
                     />
                     <TextField
+                        required
                         margin="dense"
                         label="Activity"
                         value={Training.activity}
-                        onChange={event => setTraining({ ...Training, activity: event.target.value })}
+                        onChange={event => {
+                            setTraining({ ...Training, activity: event.target.value });
+                            if (errors.activity) setErrors(prev => ({ ...prev, activity: false }));
+                        }}
                         fullWidth
                         variant="standard"
+                        error={errors.activity}
+                        helperText={errors.activity ? "Activity is required" : ""}
                     />
                     <TextField
+                        required
                         margin="dense"
-                        label="Customer"
+                        label="Customer (href or name)"
                         value={Training.customer}
-                        onChange={event => setTraining({ ...Training, customer: event.target.value })}
+                        onChange={event => {
+                            setTraining({ ...Training, customer: event.target.value });
+                            if (errors.customer) setErrors(prev => ({ ...prev, customer: false }));
+                        }}
                         fullWidth
                         variant="standard"
+                        error={errors.customer}
+                        helperText={errors.customer ? "Customer is required" : ""}
                     />
                 </DialogContent>
                 <DialogActions>
