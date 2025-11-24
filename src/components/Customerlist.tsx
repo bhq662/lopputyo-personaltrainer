@@ -125,6 +125,13 @@ export default function Customerlist() {
                     getRowId={(row: Customer) => row._links.self.href}
                     autoPageSize
                     rowSelection={false}
+                    slotProps={{
+                        toolbar: {
+                            csvOptions: { fields: ['firstname', 'lastname', 'streetaddress', 'postcode', 'city', 'email', 'phone'] },
+                            printOptions: { fields: ['firstname', 'lastname', 'streetaddress', 'postcode', 'city', 'email', 'phone'], hideFooter: true, hideToolbar: true }
+                        },
+                    }}
+                    showToolbar={true}
                 />
             </div>
         </>
