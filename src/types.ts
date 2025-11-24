@@ -28,6 +28,7 @@ export type Customer = {
 }
 
 export type Training = {
+    customerUrl: string;
     date: string;
     fDate?: string;
     duration: number;
@@ -35,10 +36,6 @@ export type Training = {
     _links: {
         self: {
             // A link to the training session itself
-            href: string;
-        }
-        training: {
-            // Another link to the training session itself
             href: string;
         }
         customer: {

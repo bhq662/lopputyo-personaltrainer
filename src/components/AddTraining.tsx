@@ -27,6 +27,7 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
     const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
 
     const [training, setTraining] = useState<Training>({
+        customerUrl: "",
         date: "",
         duration: 0,
         activity: "",
@@ -34,7 +35,6 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
         _links: {
             self: { href: '' },
             customer: { href: '' },
-            training: { href: '' }
         }
     });
 
@@ -72,6 +72,7 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
 
     const resetForm = () => {
         setTraining({
+            customerUrl: "",
             date: "",
             duration: 0,
             activity: "",
@@ -79,7 +80,6 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
             _links: {
                 self: { href: '' },
                 customer: { href: '' },
-                training: { href: '' }
             }
         });
         setSelectedCustomer(null);

@@ -5,8 +5,6 @@ import { getCustomerByUrl } from "../customerAPI";
 import { deleteTraining, getTrainings } from "../trainingAPI";
 import AddTraining from "./AddTraining";
 
-
-// MUI style imports
 import {
     DataGrid,
     GridOverlay,
@@ -17,7 +15,6 @@ import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import EditTraining from "./EditTraining";
 
-// initialize custom loading overlay for DataGrid
 function CustomLoadingOverlay() {
     return (
         <GridOverlay>
@@ -29,18 +26,13 @@ function CustomLoadingOverlay() {
 }
 
 export default function Traininglist() {
-    // set loading state
     const [loading, setLoading] = useState(true);
-
-    // initial state
     const [trainings, setTrainings] = useState<Training[]>([]);
 
-    // only fetch once on mount
     useEffect(() => {
         fetchTrainings();
     }, []);
 
-    // fetch trainings from API
     const fetchTrainings = async () => {
         setLoading(true);
 
@@ -48,55 +40,65 @@ export default function Traininglist() {
             const data = await getTrainings();
             const tr = data?._embedded?.trainings ?? [];
 
-            // Fetch customer's name from training's Customer-link
-            const trainingsWithNames = await Promise.all(
+            const trainingsWithNames: Training[] = await Promise.all(
                 tr.map(async (t: Training) => {
                     const customerUrl = t._links?.customer?.href;
 
-                    if (!customerUrl) return { ...t, customer: "" };
+                    if (!customerUrl) {
+                        return {
+                            ...t,
+                            customerName: "",
+                            customerUrl: ""
+                        } as Training;
+                    }
 
                     try {
                         const cust = await getCustomerByUrl(customerUrl);
                         return {
                             ...t,
-                            customer: `${cust.firstname} ${cust.lastname}`,
-                        };
+                            customerName: `${cust.firstname} ${cust.lastname}`,
+                            customerUrl: cust._links.self.href // actual customer URL
+                        } as Training;
                     } catch {
-                        return { ...t, customer: "" };
+                        return {
+                            ...t,
+                            customerName: "",
+                            customerUrl: ""
+                        } as Training;
                     }
                 })
             );
 
             setTrainings(trainingsWithNames);
-
         } catch (err) {
             console.error("Failed to fetch trainings", err);
-
         } finally {
             setLoading(false);
         }
     };
 
-    //fetch delete-function from API
     const handleDelete = (url: string) => {
         if (window.confirm("Are you sure?")) {
             deleteTraining(url)
                 .then(() => fetchTrainings())
-                .catch(err => console.error(err))
+                .catch(err => console.error(err));
         }
-    }
+    };
 
-    // define table layout, includes add, edit and delete -functions
     const columns: GridColDef[] = [
         {
-            field: 'date', width: 250, headerName: 'Date', renderCell: (params: GridRenderCellParams) =>
+            field: 'date',
+            width: 250,
+            headerName: 'Date',
+            renderCell: (params: GridRenderCellParams) =>
                 <span>{params.value ? dayjs(params.value as string).format('DD.MM.YYYY HH:mm') : ''}</span>
         },
         { field: 'duration', width: 125, headerName: 'Duration (min)' },
         { field: 'activity', width: 150, headerName: 'Activity' },
-        { field: 'customer', width: 200, headerName: 'Customer' },
 
-        // ACTIONS column: DELETE + EDIT
+        // ✔ use customerName instead of customer
+        { field: 'customerName', width: 200, headerName: 'Customer' },
+
         {
             field: 'actions',
             headerName: ' ',
@@ -105,7 +107,6 @@ export default function Traininglist() {
             width: 180,
             renderCell: (params: GridRenderCellParams) => {
                 const row = params.row as Training;
-                // only render actions for real rows that have a self href (avoid empty/placeholder rows)
                 const href = row?._links?.self?.href;
                 if (!href) return null;
 
@@ -113,21 +114,25 @@ export default function Traininglist() {
                     <>
                         <EditTraining
                             fetchTrainings={fetchTrainings}
-                            TrainingRow={row}
+                            TrainingRow={{
+                                ...row,
+                                selfUrl: row._links.self.href,
+                                customerUrl: row.customerUrl // this works now
+                            }}
                         />
                         <Button
                             color="error"
                             size="small"
                             onClick={() => handleDelete(href)}
-                            style={{ marginRight: 2 }}>
+                            style={{ marginRight: 2 }}
+                        >
                             DELETE
                         </Button>
                     </>
                 );
             }
         }
-
-    ]
+    ];
 
     return (
         <>
@@ -141,14 +146,12 @@ export default function Traininglist() {
                     rows={trainings}
                     columns={columns}
                     loading={loading}
-                    slots={{
-                        loadingOverlay: CustomLoadingOverlay,
-                    }}
+                    slots={{ loadingOverlay: CustomLoadingOverlay }}
                     getRowId={(row: Training) => row._links.self.href}
                     autoPageSize
                     rowSelection={false}
                 />
             </div>
         </>
-    )
+    );
 }
