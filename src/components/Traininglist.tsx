@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { getCustomerByUrl } from "../customerAPI";
 import { deleteTraining, getTrainings } from "../trainingAPI";
 import AddTraining from "./AddTraining";
+import TrainingCalendar from './TrainingCalendar';
+
 
 import {
     DataGrid,
@@ -77,6 +79,16 @@ export default function Traininglist() {
         }
     };
 
+    // toggle state for switching between calendar view and datagrid
+    const [calendarView, setCalendarView] = useState(false);
+
+    // mapping to calendar events
+    const calendarEvents = trainings.map(t => ({
+        title: `${t.activity} (${t.customerName})`,
+        start: new Date(t.date),
+        end: new Date(dayjs(t.date).add(t.duration, 'minute').toISOString()),
+    }));
+
     const handleDelete = (url: string) => {
         if (window.confirm("Are you sure?")) {
             deleteTraining(url)
@@ -96,7 +108,6 @@ export default function Traininglist() {
         { field: 'duration', width: 125, headerName: 'Duration (min)' },
         { field: 'activity', width: 150, headerName: 'Activity' },
 
-        // ✔ use customerName instead of customer
         { field: 'customerName', width: 200, headerName: 'Customer' },
 
         {
@@ -136,21 +147,34 @@ export default function Traininglist() {
 
     return (
         <>
-            <div style={{ width: "95%", margin: "20px auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ width: "95%", margin: "20px auto", display: "flex", alignItems: "center" }}>
                 <h2 style={{ margin: 0 }}>Trainings</h2>
-                <AddTraining fetchTrainings={fetchTrainings} />
+                <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+                    <AddTraining fetchTrainings={fetchTrainings} />
+                    <Button
+                        variant="outlined"
+                        onClick={() => setCalendarView(!calendarView)}
+                    >
+                        {calendarView ? "Table View" : "Calendar View"}
+                    </Button>
+                </div>
             </div>
 
-            <div style={{ width: "90%", height: 500, margin: "auto" }}>
-                <DataGrid
-                    rows={trainings}
-                    columns={columns}
-                    loading={loading}
-                    slots={{ loadingOverlay: CustomLoadingOverlay }}
-                    getRowId={(row: Training) => row._links.self.href}
-                    autoPageSize
-                    rowSelection={false}
-                />
+            {/* conditional rendering to display either DataGrid or a calendar */}
+            <div style={{ width: "95%", height: 500, margin: "auto" }}>
+                {calendarView ? (
+                    <TrainingCalendar events={calendarEvents} />
+                ) : (
+                    <DataGrid
+                        rows={trainings}
+                        columns={columns}
+                        loading={loading}
+                        slots={{ loadingOverlay: CustomLoadingOverlay }}
+                        getRowId={(row: Training) => row._links.self.href}
+                        autoPageSize
+                        rowSelection={false}
+                    />
+                )}
             </div>
         </>
     );

@@ -43,6 +43,7 @@ export type Training = {
             href: string;
         }
     }
-    // Optional helper populated by trainingAPI.getTrainings
+    // Optional helpers 
     customer?: string;
+    customerName?: string;
 }
