@@ -12,6 +12,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import InputBase from '@mui/material/InputBase';
 import SearchIcon from '@mui/icons-material/Search';
+import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',

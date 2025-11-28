@@ -5,6 +5,7 @@ import ReactDOM from "react-dom/client";
 import Customerlist from './components/Customerlist.tsx';
 import Traininglist from './components/Traininglist.tsx';
 import { createBrowserRouter, RouterProvider } from "react-router";
+import 'react-big-calendar/lib/css/react-big-calendar.css';
 
 const router = createBrowserRouter([
   // import used components
