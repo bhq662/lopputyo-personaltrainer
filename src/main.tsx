@@ -1,26 +1,19 @@
-import './index.css';
 import React from "react";
-import App from './App.tsx';
 import ReactDOM from "react-dom/client";
-import Customerlist from './components/Customerlist.tsx';
-import Traininglist from './components/Traininglist.tsx';
-import { createBrowserRouter, RouterProvider } from "react-router";
-import 'react-big-calendar/lib/css/react-big-calendar.css';
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import App from "./App.tsx";
+import Hero from "./components/Hero.tsx";
+import Customerlist from "./components/Customerlist.tsx";
+import Traininglist from "./components/Traininglist.tsx";
 
 const router = createBrowserRouter([
-  // import used components
   {
     path: "/",
     element: <App />,
     children: [
-      {
-        path: "/customers",
-        element: <Customerlist />,
-      },
-      {
-        path: "trainings",
-        element: <Traininglist />,
-      },
+      { index: true, element: <Hero /> },          // only show Hero on "/"
+      { path: "customers", element: <Customerlist /> },
+      { path: "trainings", element: <Traininglist /> },
     ],
   },
 ]);
