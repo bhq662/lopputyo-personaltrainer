@@ -10,7 +10,6 @@ export default function App() {
             id="hero"
             sx={{
                 width: '100%',
-                backgroundColor: 'hsl(210, 100%, 95%)', // light, pleasant background
                 py: { xs: 10, sm: 15 }, // small/medium padding
                 minHeight: '100vh', // make Hero at least full viewport height
             }}

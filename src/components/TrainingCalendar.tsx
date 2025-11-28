@@ -53,7 +53,7 @@ export default function TrainingCalendar({ events }: { events: CalendarEvent[] }
     return (
         <Box sx={{ width: "100%", height: "100vh" }}>
             <Typography variant="h5" sx={{ mb: 2 }}>
-                Training - Calendar view
+                Trainings - Calendar view
             </Typography>
 
             <Calendar

@@ -29,7 +29,7 @@ export default function ApplicationBar() {
     <>
       <AppBar
         position="sticky"
-        elevation={1}
+        elevation={0}
         sx={{
           backgroundColor: 'hsl(210, 100%, 95%)',
           color: 'text.primary',
@@ -38,7 +38,6 @@ export default function ApplicationBar() {
       >
         <Container maxWidth="lg">
           <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
-            {/* Logo / Brand */}
             <Typography
               variant="h6"
               component={RouterLink}

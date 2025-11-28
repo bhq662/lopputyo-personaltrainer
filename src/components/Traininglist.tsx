@@ -9,12 +9,42 @@ import TrainingCalendar from "./TrainingCalendar";
 import {
     DataGrid,
     GridOverlay,
+    Toolbar,
     type GridColDef,
     type GridRenderCellParams,
 } from "@mui/x-data-grid";
 import { Button, Typography } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import EditTraining from "./EditTraining";
+
+// initialize custom toolbar
+function CustomToolbar({ fetchTrainings, calendarView, setCalendarView }: { fetchTrainings: () => void; calendarView: boolean; setCalendarView: React.Dispatch<React.SetStateAction<boolean>> }) {
+    return (
+        <Toolbar
+            style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '8px',
+            }}
+        >
+            <Typography variant="h5" sx={{ margin: 0 }}>
+                Trainings
+            </Typography>
+            <AddTraining fetchTrainings={fetchTrainings} />
+            <Button
+                variant="outlined"
+                style={{ marginLeft: 8 }}
+                onClick={(e) => {
+                    setCalendarView((prev) => !prev);
+                    (e.currentTarget as HTMLButtonElement).blur();
+                }}
+            >
+                {calendarView ? "Table View" : "Calendar View"}
+            </Button>
+        </Toolbar>
+    );
+}
 
 // Define CalendarEvent type
 interface CalendarEvent {
@@ -199,13 +229,33 @@ export default function Traininglist() {
             ) : (
                 <div style={{ width: "100%", height: 500 }}>
                     <Typography variant="h5" sx={{ mb: 2 }}>
-                        Training - Table view
+                        Trainings - Table view
                     </Typography>
                     <DataGrid
                         rows={trainings}
                         columns={columns}
+                        slots={{
+                            toolbar: () => <CustomToolbar fetchTrainings={fetchTrainings} calendarView={false} setCalendarView={function (): void {
+                                throw new Error("Function not implemented.");
+                            }} />,
+                            loadingOverlay: CustomLoadingOverlay
+                        }}
+                        sx={{
+                            margin: '30px auto',
+                            border: 'none',
+                            '.MuiDataGrid-row': {
+                                '&:nth-of-type(even)': {
+                                    backgroundColor: 'hsl(210, 100%, 95%))', // alternating row color
+                                },
+                                '&:hover': {
+                                    backgroundColor: 'hsl(210, 100%, 95%)', // hover effect
+                                },
+                            },
+                            '.MuiDataGrid-cell': {
+                                color: 'text.primary',
+                            }
+                        }}
                         loading={loading}
-                        slots={{ loadingOverlay: CustomLoadingOverlay }}
                         getRowId={(row: Training) => row._links?.self?.href ?? `${row.activity}-${row.date}`}
                         autoPageSize
                         rowSelection={false}

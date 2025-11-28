@@ -7,12 +7,33 @@ import AddCustomer from "./AddCustomer";
 import {
     DataGrid,
     GridOverlay,
+    Toolbar,
     type GridColDef,
     type GridRenderCellParams
 } from "@mui/x-data-grid";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import EditCustomer from "./EditCustomer";
+import { Typography } from "@mui/material";
+
+// initialize custom toolbar
+function CustomToolbar({ fetchCustomers }: { fetchCustomers: () => void }) {
+    return (
+        <Toolbar
+            style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '8px',
+            }}
+        >
+            <Typography variant="h5" sx={{ margin: 0 }}>
+                Customers
+            </Typography>
+            <AddCustomer fetchCustomers={fetchCustomers} />
+        </Toolbar>
+    );
+}
 
 // initialize custom loading overlay for DataGrid
 function CustomLoadingOverlay() {
@@ -109,19 +130,30 @@ export default function Customerlist() {
 
     return (
         <>
-            <div style={{ width: "95%", margin: "20px auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <h2 style={{ margin: 0 }}>Customers</h2>
-                <AddCustomer fetchCustomers={fetchCustomers} />
-            </div>
-
             <div style={{ width: "95%", height: 600, margin: "auto" }}>
                 <DataGrid
                     rows={customers}
                     columns={columns}
-                    loading={loading}
                     slots={{
+                        toolbar: () => <CustomToolbar fetchCustomers={fetchCustomers} />,
                         loadingOverlay: CustomLoadingOverlay,
                     }}
+                    sx={{
+                        margin: '30px auto',
+                        border: 'none',
+                        '.MuiDataGrid-row': {
+                            '&:nth-of-type(even)': {
+                                backgroundColor: 'hsl(210, 100%, 95%))', // alternating row color
+                            },
+                            '&:hover': {
+                                backgroundColor: 'hsl(210, 100%, 95%)', // hover effect
+                            },
+                        },
+                        '.MuiDataGrid-cell': {
+                            color: 'text.primary',
+                        }
+                    }}
+                    loading={loading}
                     getRowId={(row: Customer) => row._links.self.href}
                     autoPageSize
                     rowSelection={false}
