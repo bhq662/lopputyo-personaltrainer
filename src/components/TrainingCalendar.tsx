@@ -5,11 +5,11 @@ import { fi } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { Box, Typography } from "@mui/material";
 
-export interface CalendarEvent {
+interface CalendarEvent {
     title: string;
     start: Date;
     end: Date;
-    tooltip?: string;
+    tooltip: string;
 }
 
 type AllowedView = "month" | "week" | "day";
@@ -26,19 +26,32 @@ const localizer = dateFnsLocalizer({
 
 function CustomEvent({ event }: { event: CalendarEvent }) {
     return (
-        <div style={{ whiteSpace: "normal", lineHeight: "1.2" }}>
-            <strong>{event.title}</strong>
-        </div>
+        <>
+            <div style={{
+                fontSize: "0.75em",
+                color: "#fff"
+            }}>
+                {format(event.start, "HH:mm")} - {format(event.end, "HH:mm")}
+            </div>
+            <div style={{
+                fontSize: "0.85em", whiteSpace: "normal",
+                wordBreak: "break-word",
+                overflow: "hidden",
+                lineHeight: "1.2"
+            }}>
+                <strong>{event.title}</strong>
+            </div>
+        </>
     );
 }
 
 
 export default function TrainingCalendar({ events }: { events: CalendarEvent[] }) {
     const [currentDate, setCurrentDate] = useState(new Date());
-    const [view, setView] = useState<AllowedView>("week");
+    const [view, setView] = useState<AllowedView>("month");
 
     return (
-        <Box sx={{ width: "100%", height: "80vh" }}>
+        <Box sx={{ width: "100%", height: "100vh" }}>
             <Typography variant="h5" sx={{ mb: 2 }}>
                 Training - Calendar view
             </Typography>
@@ -55,7 +68,7 @@ export default function TrainingCalendar({ events }: { events: CalendarEvent[] }
                 onNavigate={(d) => setCurrentDate(d)}
                 components={{ event: CustomEvent }}
                 tooltipAccessor="tooltip"
-                style={{ height: "100%" }}
+                style={{ height: "100%", marginBottom: "20" }}
             />
         </Box>
     );

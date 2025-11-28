@@ -16,6 +16,15 @@ import { Button, Typography } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import EditTraining from "./EditTraining";
 
+// Define CalendarEvent type
+interface CalendarEvent {
+    title: string;
+    start: Date;
+    end: Date;
+    tooltip: string;
+}
+
+// Loading overlay for DataGrid
 function CustomLoadingOverlay() {
     return (
         <GridOverlay>
@@ -26,12 +35,21 @@ function CustomLoadingOverlay() {
     );
 }
 
+// Helper to parse dates safely
+function parseTrainingDate(dateStr: string | undefined, duration: number) {
+    if (!dateStr) return null;
+    const day = dayjs(dateStr);
+    if (!day.isValid()) return null;
+
+    const start = day.toDate();
+    const end = day.add(duration, "minute").toDate();
+    return { start, end };
+}
+
 export default function Traininglist() {
     const [loading, setLoading] = useState(true);
     const [trainings, setTrainings] = useState<Training[]>([]);
-    // toggle state for switching between calendar view and datagrid
     const [calendarView, setCalendarView] = useState(false);
-
 
     useEffect(() => {
         fetchTrainings();
@@ -43,10 +61,9 @@ export default function Traininglist() {
         try {
             const data = await getTrainings();
             const tr = data?._embedded?.trainings ?? [];
-
             const trainingsWithNames: Training[] = await Promise.all(
                 tr.map(async (t: Training) => {
-                    const customerUrl = t._links?.customer?.href;
+                    const customerUrl = t._links?.customer?.href ?? "";
 
                     if (!customerUrl) {
                         return {
@@ -61,7 +78,7 @@ export default function Traininglist() {
                         return {
                             ...t,
                             customerName: `${cust.firstname} ${cust.lastname}`,
-                            customerUrl: cust._links.self.href, // actual customer URL
+                            customerUrl: cust._links.self.href,
                         } as Training;
                     } catch {
                         return {
@@ -94,11 +111,11 @@ export default function Traininglist() {
             field: "date",
             width: 250,
             headerName: "Date",
-            renderCell: (params: GridRenderCellParams) => (
-                <span>
-                    {params.value ? dayjs(params.value as string).format("DD.MM.YYYY HH:mm") : ""}
-                </span>
-            ),
+            renderCell: (params: GridRenderCellParams) => {
+                const dateStr = params.value as string | undefined;
+                const day = dayjs(dateStr);
+                return <span>{day.isValid() ? day.format("DD.MM.YYYY HH:mm") : "Invalid date"}</span>;
+            },
         },
         { field: "duration", width: 125, headerName: "Duration (min)" },
         { field: "activity", width: 150, headerName: "Activity" },
@@ -111,12 +128,10 @@ export default function Traininglist() {
             filterable: false,
             width: 260,
             renderCell: (params: GridRenderCellParams) => {
-                // Use the row (single training) — NOT the trainings array
                 const row = params.row as Training;
                 const href = row?._links?.self?.href;
                 if (!href) return null;
 
-                // Compose the extra fields EditTraining expects
                 const selfUrl = href;
                 const customerUrl = row._links?.customer?.href ?? row.customerUrl ?? "";
                 const customerName = row.customerName ?? "";
@@ -146,52 +161,57 @@ export default function Traininglist() {
         },
     ];
 
-    // map trainings to calendar events (always produce an array even if empty)
-    const calendarEvents = trainings.map((t) => {
-        const start = new Date(t.date);
-        // use dayjs to add minutes and produce a Date
-        const end = new Date(dayjs(t.date).add(t.duration, "minute").toISOString());
+    // Map trainings to calendar events safely
+    const calendarEvents: CalendarEvent[] = trainings
+        .map((t) => {
+            const times = parseTrainingDate(t.date, t.duration);
+            if (!times || !t.activity) return null;
 
-        return {
-            title: `${t.activity}${t.customerName ? " - " + t.customerName : ""}`,
-            start,
-            end,
-            tooltip: `${t.activity} (${t.duration} min)${t.customerName ? " - " + t.customerName : ""}`,
-        };
-    });
+            return {
+                title: t.activity + (t.customerName ? " - " + t.customerName : ""),
+                start: times.start,
+                end: times.end,
+                tooltip: t.activity + ` (${t.duration} min)` + (t.customerName ? " - " + t.customerName : ""),
+            };
+        })
+        .filter((e): e is CalendarEvent => e !== null); // Type guard
 
     return (
-        <>
-            <div style={{ width: "95%", margin: "20px auto" }}>
-                <div style={{ display: "flex", justifyContent: "right", alignItems: "center", marginBottom: 10, marginTop: 10 }}>
-                    <div>
-                        <AddTraining fetchTrainings={fetchTrainings} />
-                        <Button variant="outlined" style={{ marginLeft: 8 }} onClick={() => setCalendarView((prev) => !prev)}>
-                            {calendarView ? "Table View" : "Calendar View"}
-                        </Button>
-                    </div>
+        <div style={{ width: "95%", margin: "20px auto" }}>
+            <div style={{ display: "flex", justifyContent: "right", alignItems: "center", marginBottom: 10, marginTop: 10 }}>
+                <div>
+                    <AddTraining fetchTrainings={fetchTrainings} />
+                    <Button
+                        variant="outlined"
+                        style={{ marginLeft: 8 }}
+                        onClick={(e) => {
+                            setCalendarView((prev) => !prev);
+                            (e.currentTarget as HTMLButtonElement).blur();
+                        }}
+                    >
+                        {calendarView ? "Table View" : "Calendar View"}
+                    </Button>
                 </div>
-
-                {/* conditional rendering to display either DataGrid or a calendar */}
-                {calendarView ? (
-                    <TrainingCalendar events={calendarEvents} />
-                ) : (
-                    <div style={{ width: "100%", height: 500 }}>
-                        <Typography variant="h5" sx={{ mb: 2 }}>
-                            Training - Table view
-                        </Typography>
-                        <DataGrid
-                            rows={trainings}
-                            columns={columns}
-                            loading={loading}
-                            slots={{ loadingOverlay: CustomLoadingOverlay }}
-                            getRowId={(row: Training) => row._links?.self?.href ?? `${row.activity}-${row.date}`}
-                            autoPageSize
-                            rowSelection={false}
-                        />
-                    </div>
-                )}
             </div>
-        </>
+
+            {calendarView ? (
+                <TrainingCalendar events={calendarEvents} />
+            ) : (
+                <div style={{ width: "100%", height: 500 }}>
+                    <Typography variant="h5" sx={{ mb: 2 }}>
+                        Training - Table view
+                    </Typography>
+                    <DataGrid
+                        rows={trainings}
+                        columns={columns}
+                        loading={loading}
+                        slots={{ loadingOverlay: CustomLoadingOverlay }}
+                        getRowId={(row: Training) => row._links?.self?.href ?? `${row.activity}-${row.date}`}
+                        autoPageSize
+                        rowSelection={false}
+                    />
+                </div>
+            )}
+        </div>
     );
 }

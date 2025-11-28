@@ -1,4 +1,4 @@
-import type { Training } from "./types";
+import type { Training, TrainingUpdatePayload } from "./types";
 
 // date formatting imports
 import dayjs from 'dayjs';
@@ -43,17 +43,22 @@ export function getCustomerByUrl(href: string) {
         })
 }
 
-export function editTraining(url: string, updatedTraining: Training) {
+
+export function editTraining(
+    url: string,
+    updatedTraining: TrainingUpdatePayload
+) {
     return fetch(url, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedTraining)
-    })
-        .then(response => {
-            if (!response.ok)
-                throw new Error("Error when editing Customer");
-            return response.json();
-        });
+    }).then(async (response) => {
+        if (!response.ok) {
+            const body = await response.text().catch(() => "<no body>");
+            throw new Error(`Error when editing training: ${response.status} ${response.statusText} - ${body}`);
+        }
+        return response.json().catch(() => null);
+    });
 }
 
 export async function saveTraining(newTraining: Training) {

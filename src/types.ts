@@ -47,3 +47,10 @@ export type Training = {
     customer?: string;
     customerName?: string;
 }
+
+export type TrainingUpdatePayload = {
+    date: string;
+    duration: number;
+    activity: string;
+    customer: number; // numeric ID
+};

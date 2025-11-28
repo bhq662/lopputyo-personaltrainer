@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Training } from '../types';
+import type { Training, TrainingUpdatePayload } from '../types';
 import { editTraining } from '../trainingAPI';
 
 import type { Dayjs } from 'dayjs';
@@ -20,19 +20,24 @@ type EditTrainingProps = {
     TrainingRow: Training & { customerName?: string; selfUrl: string; customerUrl: string };
 };
 
+const fetchCustomerId = async (customerUrl: string): Promise<number> => {
+    const res = await fetch(customerUrl);
+    if (!res.ok) throw new Error("Failed to fetch customer");
+    const data = await res.json();
+    return data.id; // assumes your backend returns an `id` field
+};
+
 export default function EditTraining({ fetchTrainings, TrainingRow }: EditTrainingProps) {
     const [open, setOpen] = useState(false);
 
-    const [training, setTraining] = useState<Training>({
-        customerUrl: "",
+    const [training, setTraining] = useState<{
+        date: string;
+        duration: number;
+        activity: string;
+    }>({
         date: "",
         duration: 0,
-        activity: "",
-        customer: "",
-        _links: {
-            self: { href: "" },
-            customer: { href: "" },
-        }
+        activity: ""
     });
 
     const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
@@ -47,15 +52,9 @@ export default function EditTraining({ fetchTrainings, TrainingRow }: EditTraini
         setOpen(true);
 
         setTraining({
-            customerUrl: "",
             date: TrainingRow.date ?? "",
             duration: TrainingRow.duration ?? 0,
-            activity: TrainingRow.activity ?? "",
-            customer: TrainingRow._links?.customer?.href ?? "",  // ✔ always URL
-            _links: {
-                self: { href: TrainingRow.selfUrl },          // ALWAYS correct
-                customer: { href: TrainingRow._links.customer.href }
-            }
+            activity: TrainingRow.activity ?? ""
         });
 
         const parsed = TrainingRow.date ? dayjs(TrainingRow.date) : null;
@@ -63,17 +62,7 @@ export default function EditTraining({ fetchTrainings, TrainingRow }: EditTraini
     };
 
     const resetForm = () => {
-        setTraining({
-            customerUrl: "",
-            date: "",
-            duration: 0,
-            activity: "",
-            customer: "",
-            _links: {
-                self: { href: "" },
-                customer: { href: "" },
-            }
-        });
+        setTraining({ date: "", duration: 0, activity: "" });
         setSelectedDate(null);
         setErrors({ date: false, duration: false, activity: false });
     };
@@ -84,31 +73,43 @@ export default function EditTraining({ fetchTrainings, TrainingRow }: EditTraini
     };
 
     const handleSave = async () => {
-        if (selectedDate) {
-            setTraining(prev => ({ ...prev, date: selectedDate.toISOString() }));
-        }
-
+        // Validation
         const newErrors = {
             date: !selectedDate,
             duration: training.duration <= 0,
             activity: !training.activity.trim()
         };
-
         setErrors(newErrors);
-
         if (Object.values(newErrors).some(Boolean)) return;
 
-        const payload: Training = {
-            ...training,
+        if (!TrainingRow.selfUrl) {
+            console.error("No training URL to edit");
+            return;
+        }
+
+        if (!TrainingRow.customerUrl) {
+            console.error("No customer URL available for this training");
+            return;
+        }
+
+        // Build payload with customer ID
+        let customerId: number;
+        try {
+            customerId = await fetchCustomerId(TrainingRow.customerUrl);
+        } catch (err) {
+            console.error(err);
+            return;
+        }
+
+        const payload: TrainingUpdatePayload = {
             date: selectedDate ? selectedDate.toISOString() : training.date,
-            customer: TrainingRow.customerUrl // <-- use real customer URL here
+            duration: training.duration,
+            activity: training.activity,
+            customer: customerId
         };
 
         try {
-            const url = TrainingRow.selfUrl;
-            if (!url) throw new Error("No training URL to edit");
-
-            await editTraining(url, payload);
+            await editTraining(TrainingRow.selfUrl, payload);
             fetchTrainings();
             handleClose();
         } catch (err) {
@@ -118,9 +119,7 @@ export default function EditTraining({ fetchTrainings, TrainingRow }: EditTraini
 
     return (
         <>
-            <Button size="small" onClick={handleClickOpen}>
-                Edit
-            </Button>
+            <Button size="small" onClick={handleClickOpen}>Edit</Button>
 
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Edit Training</DialogTitle>
@@ -134,12 +133,7 @@ export default function EditTraining({ fetchTrainings, TrainingRow }: EditTraini
                             enableAccessibleFieldDOMStructure={false}
                             onChange={(value) => {
                                 setSelectedDate(value);
-                                if (value) {
-                                    setTraining(prev => ({
-                                        ...prev,
-                                        date: value.toISOString()
-                                    }));
-                                }
+                                if (value) setTraining(prev => ({ ...prev, date: value.toISOString() }));
                             }}
                             slots={{ textField: TextField }}
                             slotProps={{
@@ -186,13 +180,7 @@ export default function EditTraining({ fetchTrainings, TrainingRow }: EditTraini
                         fullWidth
                         variant="standard"
                         value={TrainingRow.customerName || ""}
-                        slotProps={{
-                            input: {
-                                readOnly: true,
-                                style: { caretColor: "transparent", cursor: "default" },
-                                onFocus: (e: React.FocusEvent<HTMLInputElement>) => e.target.blur()
-                            }
-                        }}
+                        InputProps={{ readOnly: true }}
                         helperText="Customer cannot be changed after creation"
                     />
 
