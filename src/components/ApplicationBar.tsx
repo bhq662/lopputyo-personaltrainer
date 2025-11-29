@@ -21,6 +21,7 @@ export default function ApplicationBar() {
     { label: 'Home', path: '/' },
     { label: 'Customers', path: '/customers' },
     { label: 'Trainings', path: '/trainings' },
+    { label: 'Statistics', path: '/statistics' }
   ];
 
   const toggleDrawer = (open: boolean) => () => setMobileOpen(open);
