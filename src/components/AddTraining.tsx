@@ -1,3 +1,4 @@
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import type { Training } from '../types';
 import { saveTraining } from '../trainingAPI';
@@ -20,9 +21,12 @@ import Autocomplete from '@mui/material/Autocomplete';
 
 type AddTrainingProps = {
     fetchTrainings: () => void;
+    redirectTo?: string;
 }
 
-export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
+export default function AddTraining({ fetchTrainings, redirectTo }: AddTrainingProps) {
+    const navigate = useNavigate();
+    const location = useLocation();
     const [open, setOpen] = useState(false);
     const [selectedDate, setSelectedDate] = useState<Dayjs | null>(null);
 
@@ -93,13 +97,10 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
     };
 
     const handleSave = async () => {
-        // ensure training.date is a backend-friendly string (YYYY-MM-DD)
         if (selectedDate) {
-            // Dayjs format method -> 'YYYY-MM-DD'
             setTraining(prev => ({ ...prev, date: selectedDate.format('YYYY-MM-DD') }));
         }
 
-        // ensure we use selected customer's href
         const customerHref = selectedCustomer?.href ?? training.customer;
 
         const newErrors = {
@@ -121,9 +122,11 @@ export default function AddTraining({ fetchTrainings }: AddTrainingProps) {
             await saveTraining(payload);
             fetchTrainings();
             handleClose();
+            if (redirectTo && location.pathname !== redirectTo) {
+                navigate(redirectTo);
+            }
         } catch (err) {
             console.error('saveTraining failed', err);
-            // optionally show UI feedback here
         }
     };
 

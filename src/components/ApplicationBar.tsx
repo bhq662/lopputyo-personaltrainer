@@ -39,7 +39,7 @@ export default function ApplicationBar() {
         <Container maxWidth="lg">
           <Toolbar disableGutters sx={{ justifyContent: 'space-between' }}>
             <Typography
-              variant="h6"
+              variant="h5"
               component={RouterLink}
               to="/"
               sx={{
@@ -66,7 +66,7 @@ export default function ApplicationBar() {
                     fontSize: '1rem',
                     '&:hover': {
                       color: 'primary.main',
-                      backgroundColor: 'transparent'
+                      backgroundColor: 'transparent',
                     }
                   }}
                 >
@@ -87,17 +87,27 @@ export default function ApplicationBar() {
                 anchor="top"
                 open={mobileOpen}
                 onClose={toggleDrawer(false)}
-                PaperProps={{
-                  sx: {
-                    pt: 2,
-                    backgroundColor: 'hsl(220, 100%, 95%)', // match Hero bg
+                slotProps={{
+                  paper: {
+                    sx: {
+                      pb: 2,
+                      backgroundColor: 'hsl(220, 100%, 95%)',
+                    },
                   },
                 }}
               >
                 <Box sx={{ px: 2 }}>
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                  <Box sx={{
+                    display: 'flex',
+                    justifyContent: 'flex-end'
+                  }}>
                     <IconButton onClick={toggleDrawer(false)}
-                      sx={{ '&:hover': { color: 'primary.main', backgroundColor: 'transparent' } }}
+                      sx={{
+                        '&:hover': {
+                          color: 'primary.main',
+                          backgroundColor: 'transparent'
+                        }
+                      }}
                     >
                       <CloseRoundedIcon />
                     </IconButton>
@@ -108,7 +118,12 @@ export default function ApplicationBar() {
                       component={RouterLink}
                       to={item.path}
                       onClick={toggleDrawer(false)}
-                      sx={{ '&:hover': { color: 'primary.main', backgroundColor: 'transparent' } }}
+                      sx={{
+                        '&:hover': {
+                          color: 'primary.main',
+                          backgroundColor: 'transparent',
+                        }
+                      }}
                     >
                       {item.label}
                     </MenuItem>

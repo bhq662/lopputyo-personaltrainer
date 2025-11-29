@@ -1,8 +1,13 @@
+
+import AddCustomer from './AddCustomer';
+import AddTraining from './AddTraining';
+
 // MUI imports
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
+// import { Button } from '@mui/material';
 
 export default function App() {
     return (
@@ -43,6 +48,7 @@ export default function App() {
 
                     <Typography
                         sx={{
+                            mt: 4,
                             textAlign: 'center',
                             fontSize: '1.25em',
                             color: 'text.secondary',
@@ -53,19 +59,26 @@ export default function App() {
                     </Typography>
                 </Stack>
 
-                {/* Placeholder Box instead of image
-                <Box
+                <Stack
                     sx={{
                         mt: 6,
                         width: '100%',
-                        maxWidth: 800,
-                        height: 400,
-                        borderRadius: 2,
-                        backgroundColor: 'white',
-                        boxShadow: 3,
+                        maxWidth: 180,
+                        gap: 3,
+
                     }}
-                /> */}
+                >
+                    {/* Opens customer dialog */}
+                    <AddCustomer fetchCustomers={() => { }} redirectTo="/customers" />
+
+                    {/* Training dialog */}
+                    <AddTraining fetchTrainings={() => { }} redirectTo="/trainings" />
+
+                    {/* TO DO: Link to statistics -page
+                    <Button sx={{ py: 2 }}>Statistics</Button> */}
+                </Stack>
+
             </Container>
-        </Box>
+        </Box >
     )
 }

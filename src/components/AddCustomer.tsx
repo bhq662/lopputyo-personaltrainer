@@ -1,3 +1,4 @@
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import type { Customer } from '../types';
 import { saveCustomer } from '../customerAPI';
@@ -13,9 +14,12 @@ import DialogTitle from '@mui/material/DialogTitle';
 // added as a type here, because prop is unused anywhere else
 type AddCustomerProps = {
     fetchCustomers: () => void;
+    redirectTo?: string;
 }
 
-export default function AddCustomer({ fetchCustomers }: AddCustomerProps) {
+export default function AddCustomer({ fetchCustomers, redirectTo }: AddCustomerProps) {
+    const navigate = useNavigate();
+    const location = useLocation();
     const [open, setOpen] = useState(false);
     const [Customer, setCustomer] = useState<Customer>({
         firstname: "",
@@ -113,6 +117,9 @@ export default function AddCustomer({ fetchCustomers }: AddCustomerProps) {
             .then(() => {
                 fetchCustomers();
                 handleClose();
+                if (redirectTo && location.pathname !== redirectTo) {
+                    navigate(redirectTo);
+                }
             })
             .catch(err => console.error(err));
     };

@@ -139,7 +139,6 @@ export default function Customerlist() {
                         loadingOverlay: CustomLoadingOverlay,
                     }}
                     sx={{
-                        margin: '30px auto',
                         border: 'none',
                         '.MuiDataGrid-row': {
                             '&:nth-of-type(even)': {
