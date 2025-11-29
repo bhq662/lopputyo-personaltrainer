@@ -1,4 +1,4 @@
-
+import { Link as RouterLink } from 'react-router-dom';
 import AddCustomer from './AddCustomer';
 import AddTraining from './AddTraining';
 
@@ -7,7 +7,8 @@ import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import Stack from '@mui/material/Stack';
-// import { Button } from '@mui/material';
+import { Button } from '@mui/material';
+
 
 export default function App() {
     return (
@@ -74,9 +75,13 @@ export default function App() {
                     {/* Training dialog */}
                     <AddTraining fetchTrainings={() => { }} redirectTo="/trainings" />
 
-                    {/* TO DO: Link to statistics -page
-                    <Button sx={{ py: 2 }}>Statistics</Button> */}
-                </Stack>
+                    <Button
+                        variant="outlined"
+                        component={RouterLink}
+                        to="/statistics"
+                    >
+                        Statistics
+                    </Button>                </Stack>
 
             </Container>
         </Box >
