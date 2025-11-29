@@ -41,10 +41,10 @@ export default function Statistics() {
         <Box sx={{ width: "100%", mt: 4, display: "flex", justifyContent: "center" }}>
             <Box sx={{ width: "100%", maxWidth: 900 }}>
                 <Typography variant="h5" sx={{ mb: 2 }}>
-                    Training duration per activity
+                    Booked minutes in total (per activity)
                 </Typography>
 
-                <ResponsiveContainer width="100%" aspect={16 / 9}>
+                <ResponsiveContainer width="100%" aspect={14 / 7}>
                     <BarChart
                         data={data}
                         margin={{ top: 24, right: 32, left: 16, bottom: 24 }}
@@ -56,7 +56,7 @@ export default function Statistics() {
                             tickMargin={8}
                         />
                         <YAxis
-                            label={{ value: "Duration (min)", angle: -90, position: "insideLeft", offset: 10 }}
+                            label={{ value: "Booked (min)", angle: -90, position: "insideLeft", offset: 10 }}
                             tick={{ fontSize: 14 }}
                             domain={[0, "auto"]}
                         />
