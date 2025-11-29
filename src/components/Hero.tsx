@@ -80,7 +80,7 @@ export default function App() {
                         component={RouterLink}
                         to="/statistics"
                     >
-                        Statistics
+                        View Statistics
                     </Button>                </Stack>
 
             </Container>
