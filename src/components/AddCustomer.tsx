@@ -127,7 +127,7 @@ export default function AddCustomer({ fetchCustomers, redirectTo }: AddCustomerP
     return (
         <>
             <Button variant="contained" size="medium" onClick={handleClickOpen}>
-                New Customer
+                + Add New
             </Button>
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Add New Customer</DialogTitle>
