@@ -4,7 +4,7 @@ import { deleteCustomer, getCustomers } from "../customerAPI";
 import AddCustomer from "./AddCustomer";
 import EditCustomer from "./EditCustomer";
 
-import { DataGrid, GridOverlay, type GridColDef, type GridRenderCellParams } from "@mui/x-data-grid";
+import { DataGrid, GridOverlay, GridToolbar, type GridColDef, type GridRenderCellParams } from "@mui/x-data-grid";
 import { Button, CircularProgress, Typography, Toolbar } from "@mui/material";
 import AddTraining from "./AddTraining";
 
@@ -106,26 +106,21 @@ export default function Customerlist() {
 
     return (
         <div style={{ width: "95%", height: 600, margin: "auto" }}>
+            <CustomToolbar fetchCustomers={fetchCustomers} />  {/* keep your header */}
             <DataGrid
                 rows={customers}
                 columns={columns}
                 slots={{
-                    toolbar: () => <CustomToolbar fetchCustomers={fetchCustomers} />,
+                    toolbar: GridToolbar,                 // change this line
                     loadingOverlay: CustomLoadingOverlay,
                 }}
                 sx={{
                     border: "none",
                     ".MuiDataGrid-row": {
-                        "&:nth-of-type(even)": {
-                            backgroundColor: "hsl(210, 100%, 95%)", // fixed extra ')'
-                        },
-                        "&:hover": {
-                            backgroundColor: "hsl(210, 100%, 95%)",
-                        },
+                        "&:nth-of-type(even)": { backgroundColor: "hsl(210, 100%, 95%)" },
+                        "&:hover": { backgroundColor: "hsl(210, 100%, 95%)" },
                     },
-                    ".MuiDataGrid-cell": {
-                        color: "text.primary",
-                    },
+                    ".MuiDataGrid-cell": { color: "text.primary" },
                 }}
                 loading={loading}
                 getRowId={(row: Customer) => row._links.self.href}
@@ -141,6 +136,7 @@ export default function Customerlist() {
                             hideFooter: true,
                             hideToolbar: true,
                         },
+                        showQuickFilter: true,              // optional
                     },
                 }}
                 showToolbar
