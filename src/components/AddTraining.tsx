@@ -133,7 +133,7 @@ export default function AddTraining({ fetchTrainings, redirectTo }: AddTrainingP
     return (
         <>
             <Button variant="contained" size="medium" onClick={handleClickOpen}>
-                New Training
+                + Add New
             </Button>
 
             <Dialog open={open} onClose={handleClose}>
