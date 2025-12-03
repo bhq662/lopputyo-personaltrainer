@@ -3,7 +3,8 @@ import { Calendar, dateFnsLocalizer } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { fi } from "date-fns/locale";
 import "react-big-calendar/lib/css/react-big-calendar.css";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 interface CalendarEvent {
     title: string;
@@ -52,9 +53,10 @@ export default function TrainingCalendar({ events }: { events: CalendarEvent[] }
 
     return (
         <Box sx={{ width: "100%", height: "100vh" }}>
-            <Typography variant="h5" sx={{ mb: 2 }}>
+            {/* <Typography variant="h5" sx={{ mb: 2 }}>
                 Trainings - Calendar view
-            </Typography>
+            </Typography> */}
+            <CalendarMonthIcon />
 
             <Calendar
                 localizer={localizer}

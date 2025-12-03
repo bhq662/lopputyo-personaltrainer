@@ -14,6 +14,8 @@ import {
     type GridRenderCellParams,
 } from "@mui/x-data-grid";
 import { Button, Typography } from "@mui/material";
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import TableViewIcon from '@mui/icons-material/TableView';
 import CircularProgress from "@mui/material/CircularProgress";
 import EditTraining from "./EditTraining";
 
@@ -40,7 +42,7 @@ function CustomToolbar({ fetchTrainings, calendarView, setCalendarView }: { fetc
                     (e.currentTarget as HTMLButtonElement).blur();
                 }}
             >
-                {calendarView ? "Table View" : "Calendar View"}
+                {calendarView ? < TableViewIcon /> : < CalendarMonthIcon />}
             </Button>
         </Toolbar>
     );
@@ -191,7 +193,6 @@ export default function Traininglist() {
         },
     ];
 
-    // Map trainings to calendar events safely
     const calendarEvents: CalendarEvent[] = trainings
         .map((t) => {
             const times = parseTrainingDate(t.date, t.duration);
@@ -219,7 +220,7 @@ export default function Traininglist() {
                             (e.currentTarget as HTMLButtonElement).blur();
                         }}
                     >
-                        {calendarView ? "Table View" : "Calendar View"}
+                        {calendarView ? < TableViewIcon /> : < CalendarMonthIcon />}
                     </Button>
                 </div>
             </div>
@@ -229,7 +230,7 @@ export default function Traininglist() {
             ) : (
                 <div style={{ width: "100%", height: 500 }}>
                     <Typography variant="h5" sx={{ mb: 2 }}>
-                        Trainings - Table view
+                        Trainings
                     </Typography>
                     <DataGrid
                         rows={trainings}
