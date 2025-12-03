@@ -4,8 +4,14 @@ import { deleteCustomer, getCustomers } from "../customerAPI";
 import AddCustomer from "./AddCustomer";
 import EditCustomer from "./EditCustomer";
 
-import { DataGrid, GridOverlay, GridToolbar, type GridColDef, type GridRenderCellParams } from "@mui/x-data-grid";
-import { Button, CircularProgress, Typography, Toolbar } from "@mui/material";
+import {
+    DataGrid,
+    GridOverlay,
+    useGridApiContext,
+    type GridColDef,
+    type GridRenderCellParams,
+} from "@mui/x-data-grid";
+import { Button, CircularProgress, Typography, Toolbar, Box, TextField } from "@mui/material";
 import AddTraining from "./AddTraining";
 
 function CustomToolbar({ fetchCustomers }: { fetchCustomers: () => void }) {
@@ -23,6 +29,72 @@ function CustomToolbar({ fetchCustomers }: { fetchCustomers: () => void }) {
             </Typography>
             <AddCustomer fetchCustomers={fetchCustomers} />
         </Toolbar>
+    );
+}
+
+function ExportToolbar() {
+    const apiRef = useGridApiContext();
+
+    const [q, setQ] = useState("");
+
+    const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const v = e.target.value;
+        setQ(v);
+        // quick filter via API (v7+)
+        apiRef.current.setQuickFilterValues(v ? [v] : []);
+    };
+
+    const handlePrint = () => {
+        const api = apiRef.current as unknown as {
+            exportDataAsPrint?: (options: {
+                fields?: string[];
+                hideFooter?: boolean;
+                hideToolbar?: boolean;
+            }) => void;
+        };
+
+        api.exportDataAsPrint?.({
+            fields: ["firstname", "lastname", "streetaddress", "postcode", "city", "email", "phone"],
+            hideFooter: true,
+            hideToolbar: true,
+        });
+    };
+
+    return (
+        <Box
+            sx={{
+                p: 1,
+                display: "flex",
+                gap: 1,
+                alignItems: "center",
+                justifyContent: "space-between",
+            }}
+        >
+            <TextField
+                size="small"
+                placeholder="Quick filter…"
+                value={q}
+                onChange={onChange}
+            />
+            <Box sx={{ display: "flex", gap: 1 }}>
+                <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={() => apiRef.current.exportDataAsCsv({
+                        fields: ["firstname", "lastname", "streetaddress", "postcode", "city", "email", "phone"],
+                    })}
+                >
+                    Export CSV
+                </Button>
+                <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={handlePrint}
+                >
+                    Print
+                </Button>
+            </Box>
+        </Box>
     );
 }
 
@@ -106,12 +178,12 @@ export default function Customerlist() {
 
     return (
         <div style={{ width: "95%", height: 600, margin: "auto" }}>
-            <CustomToolbar fetchCustomers={fetchCustomers} />  {/* keep your header */}
+            <CustomToolbar fetchCustomers={fetchCustomers} />
             <DataGrid
                 rows={customers}
                 columns={columns}
                 slots={{
-                    toolbar: GridToolbar,                 // change this line
+                    toolbar: ExportToolbar,             // use custom toolbar
                     loadingOverlay: CustomLoadingOverlay,
                 }}
                 sx={{
@@ -126,19 +198,6 @@ export default function Customerlist() {
                 getRowId={(row: Customer) => row._links.self.href}
                 autoPageSize
                 rowSelection={false}
-                slotProps={{
-                    toolbar: {
-                        csvOptions: {
-                            fields: ["firstname", "lastname", "streetaddress", "postcode", "city", "email", "phone"],
-                        },
-                        printOptions: {
-                            fields: ["firstname", "lastname", "streetaddress", "postcode", "city", "email", "phone"],
-                            hideFooter: true,
-                            hideToolbar: true,
-                        },
-                        showQuickFilter: true,              // optional
-                    },
-                }}
                 showToolbar
             />
         </div>
