@@ -10,8 +10,9 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 
-// style imports
-import Button from '@mui/material/Button';
+// MUI imports
+import { Button, IconButton, Tooltip } from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
 import TextField from '@mui/material/TextField';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
@@ -20,11 +21,22 @@ import DialogTitle from '@mui/material/DialogTitle';
 import Autocomplete from '@mui/material/Autocomplete';
 
 type AddTrainingProps = {
-    fetchTrainings: () => void;
+    fetchTrainings?: () => void;
+    variant?: "text" | "outlined" | "contained";
+    size?: "small" | "medium" | "large";
+    iconOnly?: boolean;
+    tooltip?: string;
     redirectTo?: string;
-}
+};
 
-export default function AddTraining({ fetchTrainings, redirectTo }: AddTrainingProps) {
+export default function AddTraining({
+    fetchTrainings,
+    redirectTo,
+    iconOnly = false,
+    variant = "contained",
+    size = "medium",
+    tooltip = "Add training",
+}: AddTrainingProps) {
     const navigate = useNavigate();
     const location = useLocation();
     const [open, setOpen] = useState(false);
@@ -74,6 +86,18 @@ export default function AddTraining({ fetchTrainings, redirectTo }: AddTrainingP
 
     const handleClickOpen = () => setOpen(true);
 
+    const trigger = iconOnly ? (
+        <Tooltip title={tooltip}>
+            <IconButton size={size} onClick={handleClickOpen}>
+                <AddIcon />
+            </IconButton>
+        </Tooltip>
+    ) : (
+        <Button variant={variant} size={size} onClick={handleClickOpen} startIcon={<AddIcon />}>
+            Add Training
+        </Button>
+    );
+
     const resetForm = () => {
         setTraining({
             customerUrl: "",
@@ -120,7 +144,9 @@ export default function AddTraining({ fetchTrainings, redirectTo }: AddTrainingP
         };
         try {
             await saveTraining(payload);
-            fetchTrainings();
+            try {
+                fetchTrainings?.(); // guard against undefined/throwing
+            } catch { /* ignore */ }
             handleClose();
             if (redirectTo && location.pathname !== redirectTo) {
                 navigate(redirectTo);
@@ -132,10 +158,7 @@ export default function AddTraining({ fetchTrainings, redirectTo }: AddTrainingP
 
     return (
         <>
-            <Button variant="contained" size="medium" onClick={handleClickOpen}>
-                + Add New
-            </Button>
-
+            {trigger}
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Add New Training</DialogTitle>
                 <DialogContent>

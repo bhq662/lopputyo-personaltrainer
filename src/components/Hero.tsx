@@ -16,8 +16,8 @@ export default function App() {
             id="hero"
             sx={{
                 width: '100%',
-                py: { xs: 10, sm: 15 }, // small/medium padding
-                minHeight: '100vh', // make Hero at least full viewport height
+                py: { xs: 10, sm: 15 },
+                minHeight: '100vh'
             }}
         >
             <Container
@@ -31,7 +31,7 @@ export default function App() {
                     spacing={2}
                     sx={{ alignItems: 'center', width: { xs: '100%', sm: '70%' } }}
                 >
-                    {/* Heading in one row */}
+                    {/* Split heading for accent color */}
                     <Typography
                         variant="h1"
                         sx={{
@@ -47,6 +47,7 @@ export default function App() {
                         Tool
                     </Typography>
 
+                    {/* Copywriting */}
                     <Typography
                         sx={{
                             mt: 4,
@@ -69,20 +70,21 @@ export default function App() {
 
                     }}
                 >
-                    {/* Opens customer dialog */}
+                    {/* Opens new customer dialog, redirects to customer list after */}
                     <AddCustomer fetchCustomers={() => { }} redirectTo="/customers" />
 
-                    {/* Training dialog */}
+                    {/* Opens new training dialog, redirects to training list after */}
                     <AddTraining fetchTrainings={() => { }} redirectTo="/trainings" />
 
+                    {/* Opens statistics page */}
                     <Button
                         variant="outlined"
                         component={RouterLink}
                         to="/statistics"
                     >
-                        View Statistics
-                    </Button>                </Stack>
-
+                        Statistics
+                    </Button>
+                </Stack>
             </Container>
         </Box >
     )

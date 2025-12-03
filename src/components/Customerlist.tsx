@@ -2,29 +2,20 @@ import type { Customer } from "../types";
 import { useState, useEffect } from "react";
 import { deleteCustomer, getCustomers } from "../customerAPI";
 import AddCustomer from "./AddCustomer";
-
-// MUI style imports
-import {
-    DataGrid,
-    GridOverlay,
-    Toolbar,
-    type GridColDef,
-    type GridRenderCellParams
-} from "@mui/x-data-grid";
-import Button from "@mui/material/Button";
-import CircularProgress from "@mui/material/CircularProgress";
 import EditCustomer from "./EditCustomer";
-import { Typography } from "@mui/material";
 
-// initialize custom toolbar
+import { DataGrid, GridOverlay, type GridColDef, type GridRenderCellParams } from "@mui/x-data-grid";
+import { Button, CircularProgress, Typography, Toolbar } from "@mui/material";
+import AddTraining from "./AddTraining";
+
 function CustomToolbar({ fetchCustomers }: { fetchCustomers: () => void }) {
     return (
         <Toolbar
             style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '8px',
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                margin: "20px 0px 10px 0px",
             }}
         >
             <Typography variant="h5" sx={{ margin: 0 }}>
@@ -35,7 +26,6 @@ function CustomToolbar({ fetchCustomers }: { fetchCustomers: () => void }) {
     );
 }
 
-// initialize custom loading overlay for DataGrid
 function CustomLoadingOverlay() {
     return (
         <GridOverlay>
@@ -46,126 +36,115 @@ function CustomLoadingOverlay() {
     );
 }
 
-
 export default function Customerlist() {
-    // loading state
     const [loading, setLoading] = useState(true);
-
-    // initial state
     const [customers, setCustomers] = useState<Customer[]>([]);
 
-    // only fetch once on mount
     useEffect(() => {
         fetchCustomers();
     }, []);
 
-    // fetch customers from API
     const fetchCustomers = async () => {
         setLoading(true);
-
         try {
             const data = await getCustomers();
             const list = data?._embedded?.customers ?? [];
             setCustomers(list);
-
         } catch (err) {
             console.error("Failed to fetch customers", err);
-
         } finally {
             setLoading(false);
         }
     };
 
-    //fetch delete-function from API
     const handleDelete = (url: string) => {
         if (window.confirm("Are you sure?")) {
             deleteCustomer(url)
                 .then(() => fetchCustomers())
-                .catch(err => console.error(err))
+                .catch((err) => console.error(err));
         }
-    }
+    };
 
-    // define table layout, includes add, edit and delete -functions
     const columns: GridColDef[] = [
-        { field: 'firstname', width: 100, headerName: 'First name' },
-        { field: 'lastname', width: 100, headerName: 'Last name' },
-        { field: 'streetaddress', width: 150, headerName: 'Street address' },
-        { field: 'postcode', width: 80, headerName: 'ZIP' },
-        { field: 'city', width: 100, headerName: 'City' },
-        { field: 'email', width: 180, headerName: 'Email' },
-        { field: 'phone', width: 150, headerName: 'Phone number' },
-
-        // ACTIONS column: DELETE + EDIT
+        { field: "firstname", width: 100, headerName: "First name" },
+        { field: "lastname", width: 100, headerName: "Last name" },
+        { field: "streetaddress", width: 150, headerName: "Street address" },
+        { field: "postcode", width: 80, headerName: "ZIP" },
+        { field: "city", width: 100, headerName: "City" },
+        { field: "email", width: 180, headerName: "Email" },
+        { field: "phone", width: 150, headerName: "Phone number" },
         {
-            field: 'actions',
-            headerName: ' ',
+            field: "actions",
+            headerName: " ",
             sortable: false,
             filterable: false,
-            width: 180,
+            width: 300,
             renderCell: (params: GridRenderCellParams) => {
                 const row = params.row as Customer;
-                // only render actions for real rows that have a self href (avoid empty/placeholder rows)
                 const href = row?._links?.self?.href;
                 if (!href) return null;
+                function fetchTrainings(): void {
+                    throw new Error("Function not implemented.");
+                }
 
                 return (
                     <>
-                        <EditCustomer
-                            fetchCustomers={fetchCustomers}
-                            CustomerRow={row}
-                        />
+                        <AddTraining fetchTrainings={fetchTrainings} iconOnly size="small" tooltip="Add a training for this customer" redirectTo="/trainings" />                        <EditCustomer fetchCustomers={fetchCustomers} CustomerRow={row} />
                         <Button
                             color="error"
                             size="small"
                             onClick={() => handleDelete(href)}
-                            style={{ marginRight: 2 }}>
+                            style={{ marginRight: 2 }}
+                        >
                             DELETE
                         </Button>
                     </>
                 );
-            }
-        }
-
-    ]
+            },
+        },
+    ];
 
     return (
-        <>
-            <div style={{ width: "95%", height: 600, margin: "auto" }}>
-                <DataGrid
-                    rows={customers}
-                    columns={columns}
-                    slots={{
-                        toolbar: () => <CustomToolbar fetchCustomers={fetchCustomers} />,
-                        loadingOverlay: CustomLoadingOverlay,
-                    }}
-                    sx={{
-                        border: 'none',
-                        '.MuiDataGrid-row': {
-                            '&:nth-of-type(even)': {
-                                backgroundColor: 'hsl(210, 100%, 95%))', // alternating row color
-                            },
-                            '&:hover': {
-                                backgroundColor: 'hsl(210, 100%, 95%)', // hover effect
-                            },
+        <div style={{ width: "95%", height: 600, margin: "auto" }}>
+            <DataGrid
+                rows={customers}
+                columns={columns}
+                slots={{
+                    toolbar: () => <CustomToolbar fetchCustomers={fetchCustomers} />,
+                    loadingOverlay: CustomLoadingOverlay,
+                }}
+                sx={{
+                    border: "none",
+                    ".MuiDataGrid-row": {
+                        "&:nth-of-type(even)": {
+                            backgroundColor: "hsl(210, 100%, 95%)", // fixed extra ')'
                         },
-                        '.MuiDataGrid-cell': {
-                            color: 'text.primary',
-                        }
-                    }}
-                    loading={loading}
-                    getRowId={(row: Customer) => row._links.self.href}
-                    autoPageSize
-                    rowSelection={false}
-                    slotProps={{
-                        toolbar: {
-                            csvOptions: { fields: ['firstname', 'lastname', 'streetaddress', 'postcode', 'city', 'email', 'phone'] },
-                            printOptions: { fields: ['firstname', 'lastname', 'streetaddress', 'postcode', 'city', 'email', 'phone'], hideFooter: true, hideToolbar: true }
+                        "&:hover": {
+                            backgroundColor: "hsl(210, 100%, 95%)",
                         },
-                    }}
-                    showToolbar={true}
-                />
-            </div>
-        </>
-    )
-
+                    },
+                    ".MuiDataGrid-cell": {
+                        color: "text.primary",
+                    },
+                }}
+                loading={loading}
+                getRowId={(row: Customer) => row._links.self.href}
+                autoPageSize
+                rowSelection={false}
+                slotProps={{
+                    toolbar: {
+                        csvOptions: {
+                            fields: ["firstname", "lastname", "streetaddress", "postcode", "city", "email", "phone"],
+                        },
+                        printOptions: {
+                            fields: ["firstname", "lastname", "streetaddress", "postcode", "city", "email", "phone"],
+                            hideFooter: true,
+                            hideToolbar: true,
+                        },
+                    },
+                }}
+                showToolbar
+            />
+        </div>
+    );
 }
